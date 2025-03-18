@@ -48,20 +48,31 @@ The application will have three main components:
 - Web Interface Module – implements a browser-based interface using WebAssembly
 
 ```
-
-                              ┌─────────────────────────────────┐
-                              │          Core Logic Block       │
-                              │  - Test generation              │
-                              │  - WPM & accuracy calculation   │
-                              │  - Mistake tracking             │
-                              │  - Customization                │
-                              └────────────────┬────────────────┘
-                                               │
-                              ┌────────────────┴────────────────┐
-                              │                                 │
-                        ┌─────┴───────────┐        ┌────────────┴─────┐
-                        │  CLI Interface  │        │  Web Interface   │
-                        │  - Terminal UI  │        │  - WebAssembly   │
-                        └─────────────────┘        └──────────────────┘
-
+                   
+                                ┌────────────────────┐                
+                                │                    │                
+                                │   Keyboard Input   │                
+                                │                    │                
+                                └──────────┬─────────┘                
+                                           │                          
+                                           │                          
+                          ┌────────────────▼─────────────────┐        
+                          │                                  │        
+                          │   Core Logic Block               │        
+                          │   - Test generation              │        
+                          │   - WPM & accuracy calculation   │        
+                          │   - Mistake tracking             │        
+                          │   - Customization                │        
+                          │                                  │        
+                          └─────┬──────────────────────┬─────┘        
+                                │                      │              
+                                │                      │              
+                   ┌────────────▼────────┐    ┌────────▼─────────────┐
+                   │                     │    │                      │
+                   │   CLI Interface     │    │   Web Interface      │
+                   │   - Terminal UI     │    │   - WebAssembly      │
+                   │   - Text-based UX   │    │   - HTML/CSS/JS UI   │
+                   │                     │    │                      │
+                   └─────────────────────┘    └──────────────────────┘
+                   
 ```
