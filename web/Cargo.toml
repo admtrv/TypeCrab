@@ -1,0 +1,13 @@
+# web/Cargo.toml
+
+[package]
+name = "web"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+core = { path = "../core" }
+
+[lib]
+crate-type = ["cdylib"]

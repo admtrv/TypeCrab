@@ -1,9 +1,14 @@
-// main.rs
+// cli/src/main.rs
 
 use clap::{Parser, ArgGroup};
+use core::{TypingTest, TestConfig, GameMode};
 
 #[derive(Debug, Parser)]
-#[command(about, version)]
+#[command(
+    name = "TypeCrab",          // TODO: hardcoded, fix
+    about = "A minimalistic, customizable typing test.",
+    version
+)]
 #[command(group(
     ArgGroup::new("mode_group")
         .args(&["words", "quote", "zen"])
@@ -15,27 +20,21 @@ use clap::{Parser, ArgGroup};
         .multiple(false)
 ))]
 struct Opt {
-    // program info
-
     /// List installed languages
     #[arg(long)]
-    list_languages: bool,
-
-    // game modes
+    list: bool,
 
     /// Enable words mode [default]
     #[arg(short, long, default_value_t = true)]
     words: bool,
 
     /// Enable quote mode
-    #[arg(short,long)]
+    #[arg(short, long)]
     quote: bool,
 
     /// Enable zen mode
-    #[arg(short,long)]
+    #[arg(short, long)]
     zen: bool,
-
-    // configuration
 
     /// Include punctuation in test text
     #[arg(short, long)]
@@ -54,7 +53,7 @@ struct Opt {
     death: bool,
 
     /// Specify test language
-    #[arg(short, long, value_name = "lang", default_value = "eng")]
+    #[arg(short, long, value_name = "lang", default_value = "en")]
     language: String,
 
     /// Specify custom test file
@@ -73,6 +72,19 @@ struct Opt {
 fn main() {
     let opt = Opt::parse();
 
-    // arguments print
-    println!("Parsed arguments: {:#?}", opt);
+    let mode = GameMode::from_flags(opt.words, opt.quote, opt.zen);
+
+    let config = TestConfig {
+        mode,
+        language: opt.language,
+        word_count: opt.count,
+        time_limit: opt.time,
+        punctuation: opt.punctuation,
+        numbers: opt.numbers,
+        backtrack: opt.backtrack,
+        death: opt.death,
+    };
+
+    let test = TypingTest::new(config);
+    test.start();
 }
