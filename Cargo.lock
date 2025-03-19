@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "rust-type"
+name = "TypeCrab"
 version = "0.1.0"
