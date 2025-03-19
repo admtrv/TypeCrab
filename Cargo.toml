@@ -1,9 +1,10 @@
 # Cargo.toml
-[package]
 
+# project configuration
+[package]
 # project info
 name = "TypeCrab"
-description = "A minimalistic, customizable typing test"
+description = "A minimalistic, customizable typing test."
 authors = ["Anton Dmitriev <xdmitriev@stuba.sk>", "Artem Zaitsev <xzaitsev@stuba.sk>"]
 keywords = ["typing", "cli", "productivity"]
 categories = ["command-line-utilities", "text-processing"]
@@ -14,9 +15,9 @@ license = "MIT"
 # major (x.0.0) - breaking changes, incompatible with previous versions
 # minor (1.y.0) - new features added without breaking existing functionality
 # patch (1.0.z) - bug fixes that do not change behavior
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-rust-version = "1.84"
+rust-version = "1.78"
 
 # repository info
 repository = "https://github.com/admtrv/TypeCrab.git"
@@ -25,5 +26,11 @@ homepage = "https://github.com/admtrv/TypeCrab"
 # exclude unnecessary files
 exclude = ["target/", ".idea/", ".git/", ".gitignore"]
 
+# binary configuration
+[[bin]]
+name = "typecrab"
+path = "src/main.rs"
+
 # dependencies
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
