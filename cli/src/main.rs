@@ -3,7 +3,7 @@
  */
 
 use clap::{Parser, ArgGroup};
-use core::{TestConfig, GameMode, generate_content};
+use core::{TestConfig, GameMode, generate_content, Response, Level};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -17,7 +17,7 @@ use core::{TestConfig, GameMode, generate_content};
         .multiple(false)
 ))]
 #[command(group(
-    ArgGroup::new("language_group")
+    ArgGroup::new("source")
         .args(&["language", "file"])
         .multiple(false)
 ))]
@@ -75,18 +75,15 @@ fn main() {
     let opt = Opt::parse();
 
     // defining mode
-    let mode = match (opt.words, opt.quote, opt.zen) {
-        (true, false, false) => GameMode::Words,
-        (false, true, false) => GameMode::Quote,
-        (false, false, true) => GameMode::Zen,
-        (false, false, false) => {
-            GameMode::Words // default mode
-        }
-        _ => {
-            eprintln!("warning: invalid mode combination, defaulting to 'words' mode");
-            GameMode::Words
-        }
+    let mode = if opt.quote {
+        GameMode::Quote
+    } else if opt.zen {
+        GameMode::Zen
+    } else {
+        // explicitly --words or default
+        GameMode::Words
     };
+
 
     let config = TestConfig {
         mode,
@@ -100,20 +97,24 @@ fn main() {
         death: opt.death,
     };
 
-    match generate_content(&config) {
-        Ok(output) => {
-            println!("--- CLI ---");
-            println!("configuration: {:?}", config);
-            if let Some(warning) = output.warning {
-                println!("{}", warning);
-            }
-            println!("test lines:");
-            for (i, line) in output.lines.iter().enumerate() {
-                println!("  {:>3}. {}", i + 1, line);
+    let output: Response = generate_content(&config);
+
+    println!("--- CLI ---");
+    println!("configuration: {:?}", config);
+
+    if let Some((level, message)) = &output.message {
+        match level {
+            Level::Info => println!("info: {}", message),
+            Level::Warning => println!("warning: {}", message),
+            Level::Error => {
+                eprintln!("error: {}", message);
+                std::process::exit(1);
             }
         }
-        Err(err) => {
-            eprintln!("{}", err);
-        }
+    }
+
+    println!("test lines:");
+    for (i, line) in output.lines.iter().enumerate() {
+        println!("  {:>3}. {}", i + 1, line);
     }
 }

@@ -6,4 +6,4 @@ mod config;
 mod generator;
 
 pub use config::{GameMode, TestConfig};
-pub use generator::generate_content;
+pub use generator::{generate_content, Level, Response};
