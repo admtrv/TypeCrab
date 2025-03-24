@@ -1,11 +1,13 @@
-// cli/src/main.rs
+/*
+ * cli/src/main.rs
+ */
 
 use clap::{Parser, ArgGroup};
-use core::{TypingTest, TestConfig, GameMode};
+use core::{TestConfig, GameMode, generate_content};
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "TypeCrab",          // TODO: hardcoded, fix
+    name = "TypeCrab",
     about = "A minimalistic, customizable typing test.",
     version
 )]
@@ -25,7 +27,7 @@ struct Opt {
     list: bool,
 
     /// Enable words mode [default]
-    #[arg(short, long, default_value_t = true)]
+    #[arg(short, long)]
     words: bool,
 
     /// Enable quote mode
@@ -72,11 +74,24 @@ struct Opt {
 fn main() {
     let opt = Opt::parse();
 
-    let mode = GameMode::from_flags(opt.words, opt.quote, opt.zen);
+    // defining mode
+    let mode = match (opt.words, opt.quote, opt.zen) {
+        (true, false, false) => GameMode::Words,
+        (false, true, false) => GameMode::Quote,
+        (false, false, true) => GameMode::Zen,
+        (false, false, false) => {
+            GameMode::Words // default mode
+        }
+        _ => {
+            eprintln!("warning: invalid mode combination, defaulting to 'words' mode");
+            GameMode::Words
+        }
+    };
 
     let config = TestConfig {
         mode,
         language: opt.language,
+        file: opt.file,
         word_count: opt.count,
         time_limit: opt.time,
         punctuation: opt.punctuation,
@@ -85,6 +100,20 @@ fn main() {
         death: opt.death,
     };
 
-    let test = TypingTest::new(config);
-    test.start();
+    match generate_content(&config) {
+        Ok(output) => {
+            println!("--- CLI ---");
+            println!("configuration: {:?}", config);
+            if let Some(warning) = output.warning {
+                println!("{}", warning);
+            }
+            println!("test lines:");
+            for (i, line) in output.lines.iter().enumerate() {
+                println!("  {:>3}. {}", i + 1, line);
+            }
+        }
+        Err(err) => {
+            eprintln!("{}", err);
+        }
+    }
 }
