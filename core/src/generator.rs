@@ -83,7 +83,7 @@ pub fn generate_content(config: &TestConfig) -> Response {
         GameMode::Quote => {
             if let Ok(lines) = load_quote(&config.language) {
                 if !lines.is_empty() {
-                    return Response::plain(lines);
+                    return Response::plain(split_lines(lines));
                 }
             }
 
@@ -137,6 +137,22 @@ fn load_quote(lang: &str) -> Result<Vec<String>, String> {
 
     load_file(file).map_err(|e| format!("failed to read quote '{}', {}", file.display(), e))
 }
+
+fn split_lines(lines: Vec<String>) -> Vec<String> {
+    lines
+        .into_iter()
+        .flat_map(|line| {
+            let mut words: Vec<String> = line.split_whitespace().map(|w| w.to_string()).collect();
+
+            if let Some(last) = words.last_mut() {
+                last.push('\n');
+            }
+
+            words
+        })
+        .collect()
+}
+
 
 fn load_file<P: AsRef<Path>>(path: P) -> io::Result<Vec<String>> {
     let file = fs::File::open(&path)?;
