@@ -3,7 +3,7 @@
  */
 
 use clap::{Parser, ArgGroup};
-use core::{TestConfig, GameMode, generate_content, Response, Level};
+use core::{GameMode, TestConfig, validate_config, Level, generate_content};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -72,20 +72,20 @@ struct Opt {
 }
 
 fn main() {
+
+    // 1. initial configuration
     let opt = Opt::parse();
 
-    // defining mode
-    let mode = if opt.quote {
+
+    let mode = if opt.quote {   // defining mode
         GameMode::Quote
     } else if opt.zen {
         GameMode::Zen
     } else {
-        // explicitly --words or default
-        GameMode::Words
+        GameMode::Words // explicitly --words or default
     };
 
-
-    let config = TestConfig {
+    let initial_config = TestConfig {
         mode,
         language: opt.language,
         file: opt.file,
@@ -97,12 +97,29 @@ fn main() {
         death: opt.death,
     };
 
-    let output: Response = generate_content(&config);
+    // 2. configuration validation
+    let config_response = validate_config(initial_config);
+    let config = config_response.payload;
 
     println!("--- CLI ---");
+
+    if let Some((level, message)) = &config_response.message {
+        match level {
+            Level::Info => println!("info: {}", message),
+            Level::Warning => println!("warning: {}", message),
+            Level::Error => {
+                eprintln!("error: {}", message);
+                std::process::exit(1);
+            }
+        }
+    }
+
     println!("configuration: {:?}", config);
 
-    if let Some((level, message)) = &output.message {
+    // 3. test generation
+    let generation_response = generate_content(&config);
+
+    if let Some((level, message)) = &generation_response.message {
         match level {
             Level::Info => println!("info: {}", message),
             Level::Warning => println!("warning: {}", message),
@@ -114,7 +131,7 @@ fn main() {
     }
 
     println!("test lines:");
-    for (i, line) in output.lines.iter().enumerate() {
+    for (i, line) in generation_response.payload.iter().enumerate() {
         println!("  {:>3}. {}", i + 1, line);
     }
 }

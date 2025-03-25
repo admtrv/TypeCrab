@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/logo.png" alt="Logo" width="250">
+  <img src="resources/images/logo.png" alt="Logo" width="250">
 </p>
 
 <h1 align="center">TypeCrab</h1>
