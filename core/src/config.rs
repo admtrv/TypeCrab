@@ -51,7 +51,7 @@ pub fn validate_config(mut config: TestConfig) -> ConfigResponse {
     let mut messages: Vec<String> = Vec::new();
     let mut level = Level::Info;
 
-    // 1. word_count / time_limit validation
+    // word_count / time_limit validation
     if config.word_count == 0 {
         config.word_count = 25;
         messages.push("invalid word count, set to 25".to_string());
@@ -64,7 +64,7 @@ pub fn validate_config(mut config: TestConfig) -> ConfigResponse {
         level.escalate(Level::Warning);
     }
 
-    // 2. custom file validation
+    // custom file validation
     if let Some(ref path_str) = config.file {
         if matches!(config.mode, GameMode::Zen) {
             messages.push("provided custom file, but chosen zen mode".to_string());
@@ -78,7 +78,7 @@ pub fn validate_config(mut config: TestConfig) -> ConfigResponse {
         }
     }
 
-    // 3. mode-specific validation
+    // mode-specific validation
     match config.mode {
         GameMode::Words => {
             let path = Path::new(WORDS_DIR).join(format!("{}.txt", config.language));

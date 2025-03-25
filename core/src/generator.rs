@@ -80,18 +80,20 @@ fn load_quote(lang: &str) -> Result<Vec<String>, String> {
     Ok(lines)
 }
 fn split_lines(lines: Vec<String>) -> Vec<String> {
-    lines
-        .into_iter()
-        .flat_map(|line| {
-            let mut words: Vec<String> = line.split_whitespace().map(|w| w.to_string()).collect();
+    let len = lines.len();
+    let mut result = Vec::new();
 
-            if let Some(last) = words.last_mut() {
-                last.push('\n');
-            }
+    for (i, line) in lines.into_iter().enumerate() {
+        let mut words: Vec<String> = line.split_whitespace().map(|w| w.to_string()).collect();
 
-            words
-        })
-        .collect()
+        if i != len - 1 {
+            words.push("\n".to_string());
+        }
+
+        result.extend(words);
+    }
+
+    result
 }
 
 fn load_file<P: AsRef<Path>>(path: P) -> io::Result<Vec<String>> {

@@ -35,3 +35,6 @@ exclude = ["target/", ".idea/", ".git/", ".gitignore"]
 clap = { version = "4.5", features = ["derive"] }
 wasm-bindgen = "0.2"
 rand = "0.9.0"
+ratatui = "0.29.0"
+crossterm = "0.28"
+unicode-width = "0.2"

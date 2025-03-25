@@ -2,8 +2,30 @@
  * cli/src/main.rs
  */
 
-use clap::{Parser, ArgGroup};
-use core::{GameMode, TestConfig, validate_config, Level, generate_content};
+pub mod test;
+
+use std::{
+    io,
+    thread::sleep,
+    time::Duration,
+};
+
+use clap::{ArgGroup, Parser};
+
+use crossterm::{
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+
+use ratatui::{
+    backend::CrosstermBackend,
+    Terminal,
+};
+
+use core::{generate_content, validate_config, GameMode, TestConfig};
+
+use crate::test::TestView;
+
 
 #[derive(Debug, Parser)]
 #[command(
@@ -73,16 +95,14 @@ struct Opt {
 
 fn main() {
 
-    // 1. initial configuration
     let opt = Opt::parse();
 
-
-    let mode = if opt.quote {   // defining mode
+    let mode = if opt.quote {
         GameMode::Quote
     } else if opt.zen {
         GameMode::Zen
     } else {
-        GameMode::Words // explicitly --words or default
+        GameMode::Words
     };
 
     let initial_config = TestConfig {
@@ -97,41 +117,31 @@ fn main() {
         death: opt.death,
     };
 
-    // 2. configuration validation
     let config_response = validate_config(initial_config);
+
     let config = config_response.payload;
 
-    println!("--- CLI ---");
-
-    if let Some((level, message)) = &config_response.message {
-        match level {
-            Level::Info => println!("info: {}", message),
-            Level::Warning => println!("warning: {}", message),
-            Level::Error => {
-                eprintln!("error: {}", message);
-                std::process::exit(1);
-            }
-        }
-    }
-
-    println!("configuration: {:?}", config);
-
-    // 3. test generation
     let generation_response = generate_content(&config);
 
-    if let Some((level, message)) = &generation_response.message {
-        match level {
-            Level::Info => println!("info: {}", message),
-            Level::Warning => println!("warning: {}", message),
-            Level::Error => {
-                eprintln!("error: {}", message);
-                std::process::exit(1);
-            }
-        }
-    }
+    let view = TestView {
+        words: &generation_response.payload,
+        status: config_response.message.clone().or(generation_response.message.clone()),
+    };
 
-    println!("test lines:");
-    for (i, line) in generation_response.payload.iter().enumerate() {
-        println!("  {:>3}. {}", i + 1, line);
-    }
+    enable_raw_mode().unwrap();
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen).unwrap();
+
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend).unwrap();
+
+    terminal.draw(|f| {
+        let area = f.area();
+        f.render_widget(view, area);
+    }).unwrap();
+
+    sleep(Duration::from_secs(5));
+
+    disable_raw_mode().unwrap();
+    execute!(io::stdout(), LeaveAlternateScreen).unwrap();
 }

@@ -10,5 +10,8 @@ name = "typecrab"
 path = "src/main.rs"
 
 [dependencies]
-clap = { workspace = true }
 core = { path = "../core" }
+clap = { workspace = true }
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+unicode-width = { workspace = true }
