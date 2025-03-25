@@ -10,7 +10,7 @@
     - `validate_config(config)` checks consistency:
         - Ensures compatibility between mode and file
         - Verifies presence of required assets (e.g., wordlists or quotes)
-        - Adjusts invalid values (e.g. word count = 0 -> 25)
+        - Adjusts invalid values (e.g., word count = 0 -> 25)
     - Returns a `ConfigResponse` with:
         - Possibly modified config
         - Optional validation message (info, warning, or error)
@@ -32,7 +32,7 @@
 ### `core/generator.rs`
 - Responsible for generating the actual test content based on the config  
 - Supports reading words, quotes, or user-provided files. 
-- Handles formatting logic (e.g. splitting quotes into words)
+- Handles formatting logic (e.g., splitting quotes into words)
 
 ### `core/responce.rs`
 - Generic response structure (`Response<T>`) with support for levels: `Info`, `Warning`, and `Error`
