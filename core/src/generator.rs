@@ -2,15 +2,31 @@
  * core/src/generator.rs
  */
 
-use std::{fs, io::{self, BufRead}, path::Path};
-use rand::{seq::SliceRandom, rng};
-use rand::prelude::IndexedRandom;
+use std::{
+    fs,
+    io::{self, BufRead},
+    path::Path,
+};
 
-use crate::config::{GameMode, TestConfig};
-use crate::response::{Response};
+use rand::{
+    prelude::IndexedRandom,
+    rng,
+    Rng,
+};
+
+use crate::{
+    config::{GameMode, TestConfig},
+    response::Response,
+};
 
 const WORDS_DIR: &str = "resources/words";
 const QUOTES_DIR: &str = "resources/quotes";
+
+const PUNCTS: &[&str] = &[".", ",", "!", "?", ":", ";"];
+const NUMBER_RANGE: std::ops::RangeInclusive<u32> = 1..=9999;
+
+const PUNCT_PROBABILITY: f64 = 0.2;
+const NUMBER_PROBABILITY: f64 = 0.2;
 
 pub type GeneratorResponse = Response<Vec<String>>;
 
@@ -25,7 +41,7 @@ pub fn generate_content(config: &TestConfig) -> GeneratorResponse {
         };
 
         return match config.mode {
-            GameMode::Words => GeneratorResponse::plain(finalize_lines(lines, config.word_count)),
+            GameMode::Words => GeneratorResponse::plain(finalize_lines(lines, config)),
             GameMode::Quote => GeneratorResponse::plain(split_lines(lines)),
             GameMode::Zen => GeneratorResponse::with_error(Vec::new(), "zen mode should not receive a file".to_string())
         };
@@ -36,8 +52,8 @@ pub fn generate_content(config: &TestConfig) -> GeneratorResponse {
 
         // words mode
         GameMode::Words => {
-            match load_words(&config.language, config.word_count) {
-                Ok(lines) => GeneratorResponse::plain(lines),
+            match load_words(&config.language) {
+                Ok(lines) => GeneratorResponse::plain(finalize_lines(lines, config)),
                 Err(e) => GeneratorResponse::with_error(Vec::new(), e),
             }
         }
@@ -55,11 +71,9 @@ pub fn generate_content(config: &TestConfig) -> GeneratorResponse {
     }
 }
 
-fn load_words(lang: &str, count: usize) -> Result<Vec<String>, String> {
+fn load_words(lang: &str) -> Result<Vec<String>, String> {
     let path = Path::new(WORDS_DIR).join(format!("{}.txt", lang));
-    let lines = load_file(&path)
-        .map_err(|e| format!("cannot read words '{}', {}", path.display(), e))?;
-    Ok(finalize_lines(lines, count))
+    load_file(&path).map_err(|e| format!("cannot read words '{}', {}", path.display(), e))
 }
 
 fn load_quote(lang: &str) -> Result<Vec<String>, String> {
@@ -79,6 +93,39 @@ fn load_quote(lang: &str) -> Result<Vec<String>, String> {
         .map_err(|e| format!("failed to read quote '{}', {}", file.display(), e))?;
     Ok(lines)
 }
+
+fn finalize_lines(lines: Vec<String>, config: &TestConfig) -> Vec<String> {
+    let mut rng = rng();
+
+    let base_words: Vec<String> = lines
+        .into_iter()
+        .flat_map(|l| l.split_whitespace().map(|s| s.to_string()).collect::<Vec<_>>())
+        .collect();
+
+    let mut result = Vec::new();
+
+    for _ in 0..config.word_count {
+        let word = base_words.choose(&mut rng).cloned().unwrap_or_default();
+
+        let mut final_word = word.clone();
+
+        // punctuation
+        if config.punctuation && rng.random_bool(PUNCT_PROBABILITY) {
+            final_word.push_str(PUNCTS.choose(&mut rng).unwrap());
+        }
+
+        result.push(final_word);
+
+        // numbers
+        if config.numbers && rng.random_bool(NUMBER_PROBABILITY) {
+            let number = rng.random_range(NUMBER_RANGE);
+            result.push(number.to_string());
+        }
+    }
+
+    result
+}
+
 fn split_lines(lines: Vec<String>) -> Vec<String> {
     let len = lines.len();
     let mut result = Vec::new();
@@ -100,11 +147,4 @@ fn load_file<P: AsRef<Path>>(path: P) -> io::Result<Vec<String>> {
     let file = fs::File::open(&path)?;
     let reader = io::BufReader::new(file);
     reader.lines().collect()
-}
-
-fn finalize_lines(mut lines: Vec<String>, count: usize) -> Vec<String> {
-    let mut rng = rng();
-    lines.shuffle(&mut rng);
-    lines.truncate(count);
-    lines
 }
