@@ -74,23 +74,20 @@ fn build_test(test: &Test, max_width: usize) -> Vec<Line> {
         let spans_for_word = word_to_spans(i, test);
 
         // resulting word width
-        let mut word_width = 0;
-        for sp in &spans_for_word {
-            word_width += sp.content.as_ref().width();
-        }
-
-        // if not first in line, then space
-        let space = if current_spans.is_empty() { 0 } else { 1 };
+        let word_width = spans_for_word
+            .iter()
+            .map(|sp| UnicodeWidthStr::width(sp.content.as_ref()))
+            .sum::<usize>();
 
         // if word not fits in line, then new line
-        if current_width + word_width + space > max_width {
+        if current_width + word_width + if current_spans.is_empty() { 0 } else { 1 } > max_width - 2 {
             lines.push(Line::from(current_spans));
             current_spans = Vec::new();
             current_width = 0;
         }
 
-        // add space
-        if space == 1 {
+        // add space if needed
+        if !current_spans.is_empty() {
             current_spans.push(Span::raw(" "));
             current_width += 1;
         }
@@ -132,7 +129,7 @@ fn word_to_spans(i: usize, test: &Test) -> Vec<Span<'static>> {
     highlight_word(typed, text, is_current)
 }
 
-// highlighting word by symbol:
+// highlighting word by symbols:
 //  before first mistake - all green
 //  after first mistake - all red
 //  current symbol - underline
