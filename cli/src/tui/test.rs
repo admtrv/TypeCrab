@@ -10,19 +10,11 @@ use ratatui::{
         Layout,
         Rect
     },
-    style::{
-        Color,
-        Modifier,
-        Style
-    },
     text::{
         Line,
         Span
     },
     widgets::{
-        Block,
-        BorderType,
-        Borders,
         Paragraph,
         Widget
     },
@@ -31,6 +23,12 @@ use unicode_width::UnicodeWidthStr;
 use core::Level;
 
 use crate::logic::Test;
+use crate::tui::components::{
+    STYLE_INFO, STYLE_WARNING, STYLE_ERROR,
+    STYLE_CORRECT, STYLE_INCORRECT,
+    STYLE_ACTIVE, STYLE_UNDERLINE, STYLE_INACTIVE,
+    styled_block,
+};
 
 pub struct TestView<'a> {
     pub test: &'a Test,
@@ -118,7 +116,7 @@ fn word_to_spans(i: usize, test: &Test) -> Vec<Span<'static>> {
     if i > test.current_word {
         return vec![Span::styled(
             test.words[i].text.clone(),
-            Style::default().fg(Color::DarkGray),
+            *STYLE_INACTIVE,
         )];
     }
 
@@ -150,21 +148,21 @@ fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static
 
         if mismatch_happened {
             // after first mistake - everything red
-            spans.push(Span::styled(t_char.to_string(), Style::default().fg(Color::Red)));
+            spans.push(Span::styled(t_char.to_string(), *STYLE_INCORRECT));
         } else if t_char == r_char {
             // correct character - green
-            spans.push(Span::styled(t_char.to_string(), Style::default().fg(Color::Green)));
+            spans.push(Span::styled(t_char.to_string(), *STYLE_CORRECT));
         } else {
             // first mistake - red and set flag
             mismatch_happened = true;
-            spans.push(Span::styled(t_char.to_string(), Style::default().fg(Color::Red)));
+            spans.push(Span::styled(t_char.to_string(), *STYLE_INCORRECT));
         }
         i += 1;
     }
 
     // remaining typed chars (extra input) - red
     for &c in &typed_chars[i..] {
-        spans.push(Span::styled(c.to_string(), Style::default().fg(Color::Red)));
+        spans.push(Span::styled(c.to_string(), *STYLE_INCORRECT));
     }
 
     // if user not completed word
@@ -173,16 +171,16 @@ fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static
             // current word - underline next expected char
             spans.push(Span::styled(
                 text_chars[i].to_string(),
-                Style::default().fg(Color::White).add_modifier(Modifier::UNDERLINED),
+                *STYLE_UNDERLINE,
             ));
             // rest - gray
             for &ch in &text_chars[i + 1..] {
-                spans.push(Span::styled(ch.to_string(), Style::default().fg(Color::DarkGray)));
+                spans.push(Span::styled(ch.to_string(), *STYLE_INACTIVE));
             }
         } else {
             // nt current - all remaining chars gray
             for &ch in &text_chars[i..] {
-                spans.push(Span::styled(ch.to_string(), Style::default().fg(Color::DarkGray)));
+                spans.push(Span::styled(ch.to_string(), *STYLE_INACTIVE));
             }
         }
     }
@@ -193,32 +191,17 @@ fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static
 fn build_status(status: &Option<(Level, String)>) -> Line {
     match status {
         Some((level, msg)) => {
-            let label_color = match level {
-                Level::Info => Color::Green,
-                Level::Warning => Color::LightYellow,
-                Level::Error => Color::Red,
+            let (label, style) = match level {
+                Level::Info => ("info", *STYLE_INFO),
+                Level::Warning => ("warning", *STYLE_WARNING),
+                Level::Error => ("error", *STYLE_ERROR),
             };
+
             Line::from(vec![
-                Span::styled(format!("{}: ", level_label(level)), Style::default().fg(label_color)),
-                Span::styled(msg, Style::default().fg(Color::White)),
+                Span::styled(format!("{label}: "), style.clone()),
+                Span::styled(msg, *STYLE_ACTIVE),
             ])
         }
         None => Line::from(""),
     }
-}
-
-fn level_label(level: &Level) -> &'static str {
-    match level {
-        Level::Info => "info",
-        Level::Warning => "warning",
-        Level::Error => "error",
-    }
-}
-
-fn styled_block(title: &str) -> Block<'_> {
-    Block::default()
-        .title(Span::styled(title, Style::default().fg(Color::White)))
-        .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
-        .border_style(Style::default().fg(Color::LightYellow))
 }

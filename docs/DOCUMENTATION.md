@@ -51,11 +51,14 @@
 
 ## To Do
 
-- core:
-   1. languages list extraction
+- Core:
+   1. Languages list extraction
 
-- cli:
-  1. time limitation
-  2. languages listing
-  3. zen mode
-  4. graphic theme changing (5 common themes)
+- Cli:
+  1. Time limitation
+  2. Languages listing
+  3. Zen mode
+  4. Color schemes changing (5 common color schemes). Suggestions:
+     1. [Dracula](https://draculatheme.com/)
+     2. [Monokai Pro](https://monokai.pro/)
+     3. [Gruvbox](https://github.com/morhetz/gruvbox)
