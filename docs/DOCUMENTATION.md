@@ -33,10 +33,9 @@
    - Real-time input is processed and collected
 
 5. Result Evaluation
-   - Once test completed, raw test data (`RawData`) is sent to the core block for analysis
+   - Once test completed, raw test data (`RawResults`) is sent to the core block for analysis
    - Core computes performance metrics and make results
-   - Final `Results` structure is returned, ready for display
-   - `!` It might make sense to move the `RawData`, `Event`, and `Word` structures into the core logic so u can use it on Web UI also
+   - Final data `FinalResults` structure is returned, ready for display
 
 ## Core Structure
 
@@ -46,18 +45,34 @@
 
 ### `core/generator.rs`
 - Responsible for generating the actual test content based on the config  
-- Supports reading words, quotes, or user-provided files. 
+- Supports reading words, quotes, or user-provided files
 - Handles formatting logic (e.g., splitting quotes into words)
 
 ### `core/listing.rs`
 - Provides language listing functionality via `list_languages()`
 - Scans the `resources/words` directory and returns file stem names as language codes
 
-### `core/responce.rs`
+### `core/results.rs`
+- Provides core data structures `RawResults` for raw test data and `FinalResults` for final performance summary (accuracy, speed, etc.)
+- `Key` is unified key representation:
+   - in cli mapped from `crossterm::event::KeyEvent` using `fn convert_key(key: &KeyEvent)` in `cli/src/logic.rs`
+   - in web should be mapped from js `KeyboardEvent`
+- `Event` is single key press (event) representation:
+   - `time` is time since test start:
+      - in cli used `Instant::elapsed()`
+      - in web should be used `performance.now()` delta
+   - `correct` can be `true` / `false` / `None` (for system keys)
+- `Word` represents a single test word with its associated input events
+- Should be included logic for analyzing raw input and converting it into final results suitable for ui display
+
+### `core/response.rs`
 - Generic response structure (`Response<T>`) with support for levels: `Info`, `Warning`, and `Error`
 - Used for returning payloads along with contextual messages
 
 ## To Do
+
+- Core
+  1. Results generation logic
 
 - Cli:
   1. Time limitation

@@ -5,35 +5,20 @@
 use crossterm::event::{
     KeyCode,
     KeyEvent,
-    KeyEventKind
+    KeyEventKind,
+    KeyModifiers
 };
 use std::time::Instant;
 
-use core::Config;
-
-#[derive(Debug, Clone)]
-pub struct Event {
-    pub time: Instant,          // when it happened
-    pub key: KeyEvent,          // what key
-    pub correct: Option<bool>,  // true - correct, false - mistake, none - system move
-}
-
-#[derive(Debug, Clone)]
-pub struct Word {
-    pub text: String,           // what needed to enter
-    pub progress: String,       // what already entered
-    pub events: Vec<Event>,     // all events
-}
-
-impl From<String> for Word {
-    fn from(string: String) -> Self {
-        Word {
-            text: string,
-            progress: String::new(),
-            events: Vec::new(),
-        }
+use core::{
+    Config,
+    results::{
+        Key,
+        Event,
+        Word,
+        RawResults
     }
-}
+};
 
 #[derive(Debug)]
 pub struct Test {
@@ -42,6 +27,7 @@ pub struct Test {
     pub complete: bool,
     pub backtrack: bool,
     pub death: bool,
+    start_time: Instant,
 }
 
 impl Test {
@@ -53,6 +39,7 @@ impl Test {
             complete: false,
             backtrack: config.backtrack,
             death: config.death,
+            start_time: Instant::now(),
         }
     }
 
@@ -61,22 +48,35 @@ impl Test {
             return;
         }
 
+        let event_key = convert_key(&key);
+        let elapsed = self.start_time.elapsed();
+
         if self.words.is_empty() {
             self.complete = true;
             return;
         }
 
-        match key.code {
+        let current = &mut self.words[self.current_word];
+
+        match event_key {
+            // end current test
+            Key::CtrlC | Key::Escape => {
+                current.events.push(Event {
+                    time: elapsed,
+                    key: event_key,
+                    correct: None,
+                });
+                self.complete = true;
+            }
 
             // finalize current word
-            KeyCode::Char(' ') | KeyCode::Enter => {
-                let current = &mut self.words[self.current_word];
+            Key::Enter | Key::Space => {
                 if !current.progress.is_empty() || current.text.is_empty() {
                     let correct = current.text == current.progress;
                     current.events.push(Event {
-                        time: Instant::now(),
-                        key,
-                        correct: Some(correct),
+                        time: elapsed,
+                        key: event_key,
+                        correct: None,
                     });
 
                     // end test if wrong and sudden death enabled
@@ -90,8 +90,7 @@ impl Test {
             }
 
             // process backspace/backtracking
-            KeyCode::Backspace => {
-                let current = &mut self.words[self.current_word];
+            Key::Backspace => {
                 if current.progress.is_empty() {
                     if self.backtrack && self.current_word > 0 {
                         self.prev_word();
@@ -99,22 +98,21 @@ impl Test {
                 } else {
                     current.progress.pop();
                     current.events.push(Event {
-                        time: Instant::now(),
-                        key,
+                        time: elapsed,
+                        key: event_key,
                         correct: None,
                     });
                 }
             }
 
             // process character input
-            KeyCode::Char(c) => {
-                let current = &mut self.words[self.current_word];
+            Key::Char(c) => {
                 current.progress.push(c);
 
                 let partial_correct = current.text.starts_with(&current.progress);
                 current.events.push(Event {
-                    time: Instant::now(),
-                    key,
+                    time: elapsed,
+                    key: event_key.clone(),
                     correct: Some(partial_correct),
                 });
 
@@ -147,29 +145,27 @@ impl Test {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct RawData {
-    pub words: Vec<Word>,
-    pub events: Vec<Event>,
-}
-
-impl From<&Test> for RawData {
+impl From<&Test> for RawResults {
     fn from(test: &Test) -> Self {
-        let words: Vec<Word> = test.words
-            .iter()
-            .map(|w| Word {
-                text: w.text.clone(),
-                progress: w.progress.clone(),
-                events: w.events.iter().map(|e| Event {
-                    time: e.time,
-                    key: e.key,
-                    correct: e.correct,
-                }).collect(),
-            })
-            .collect();
-
+        let words = test.words.clone();
         let events = words.iter().flat_map(|w| w.events.clone()).collect();
 
-        RawData { words, events }
+        RawResults { words, events }
     }
 }
+
+fn convert_key(key: &KeyEvent) -> Key {
+    if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
+        return Key::CtrlC;
+    }
+
+    match key.code {
+        KeyCode::Enter => Key::Enter,
+        KeyCode::Backspace => Key::Backspace,
+        KeyCode::Esc => Key::Escape,
+        KeyCode::Char(' ') => Key::Space,
+        KeyCode::Char(c) => Key::Char(c),
+        other => Key::Other(format!("{:?}", other)),
+    }
+}
+

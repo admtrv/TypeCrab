@@ -40,15 +40,15 @@ use core::{
     list_languages,
     GameMode,
     Config,
-    Level
+    Level,
+    RawResults
 };
 
 use tui::TestView;
 use tui::ResultView;
 
 use logic::{
-    Test,
-    RawData
+    Test
 };
 
 const STYLE_ERROR: &str = "\x1b[1;31merror:\x1b[0m";        // 1;31 = bold red, 0m = reset
@@ -244,10 +244,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
 
-    // getting raw test data
-    let raw_results = RawData::from(&test);
+    // getting raw test results, for now just printing
+    let raw_results = RawResults::from(&test);
 
-    // api result generation from raw data
+    println!("Results:");
+    for (i, word) in raw_results.words.iter().enumerate() {
+        println!("Word {i}:");
+        println!("  Text:     {}", word.text);
+        println!("  Entered:  {}", word.progress);
+        println!("  Events:");
+        for event in &word.events {
+            println!(
+                "    - {:?} {:?} [{}]",
+                event.key,
+                event.time,
+                match event.correct {
+                    Some(true) => "correct",
+                    Some(false) => "mistake",
+                    None => "system",
+                }
+            );
+        }
+    }
+
+    // api final results generation from raw test results
 
     Ok(())
 }
