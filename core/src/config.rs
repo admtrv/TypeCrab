@@ -7,13 +7,14 @@ use std::{
     path::Path
 };
 
-use crate::response::{
-    Level,
-    Response
+use crate::{
+    response::{
+        Level,
+        Response
+    },
+    WORDS_DIR,
+    QUOTES_DIR,
 };
-
-const WORDS_DIR: &str = "resources/words";
-const QUOTES_DIR: &str = "resources/quotes";
 
 pub type ConfigResponse = Response<Config>;
 

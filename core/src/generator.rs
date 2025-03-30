@@ -22,10 +22,10 @@ use crate::{
         Config
     },
     response::Response,
+    WORDS_DIR,
+    QUOTES_DIR,
 };
 
-const WORDS_DIR: &str = "resources/words";
-const QUOTES_DIR: &str = "resources/quotes";
 
 const PUNCTS: &[&str] = &[".", ",", "!", "?", ":", ";"];
 const NUMBER_RANGE: std::ops::RangeInclusive<u32> = 1..=9999;
@@ -35,7 +35,7 @@ const NUMBER_PROBABILITY: f64 = 0.2;
 
 pub type GeneratorResponse = Response<Vec<String>>;
 
-// api function, generates test content according to config
+// api function, that generates test content according to config
 pub fn generate_content(config: &Config) -> GeneratorResponse {
 
     // if user specified file, read from it directly

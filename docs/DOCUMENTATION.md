@@ -2,6 +2,10 @@
 
 ## Execution Flow
 
+0. Language Listing
+    - To get the list of available languages, use `list_languages()`
+    - Returns a `ListingResponse` with sorted file stems from `resources/words/*.txt`
+
 1. Configuration Creation
     - Builds an initial `Config` based on user input
     - Selects default values if not explicitly set
@@ -45,20 +49,20 @@
 - Supports reading words, quotes, or user-provided files. 
 - Handles formatting logic (e.g., splitting quotes into words)
 
+### `core/listing.rs`
+- Provides language listing functionality via `list_languages()`
+- Scans the `resources/words` directory and returns file stem names as language codes
+
 ### `core/responce.rs`
 - Generic response structure (`Response<T>`) with support for levels: `Info`, `Warning`, and `Error`
 - Used for returning payloads along with contextual messages
 
 ## To Do
 
-- Core:
-   1. Languages list extraction
-
 - Cli:
   1. Time limitation
-  2. Languages listing
-  3. Zen mode
-  4. Color schemes changing (5 common color schemes). Suggestions:
+  2. Zen mode
+  3. Color schemes changing (5 common color schemes). Suggestions:
      1. [Dracula](https://draculatheme.com/)
      2. [Monokai Pro](https://monokai.pro/)
      3. [Gruvbox](https://github.com/morhetz/gruvbox)

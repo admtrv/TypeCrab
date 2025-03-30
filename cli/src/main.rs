@@ -37,6 +37,7 @@ use ratatui::{
 use core::{
     generate_content,
     validate_config,
+    list_languages,
     GameMode,
     Config,
     Level
@@ -49,6 +50,11 @@ use logic::{
     Test,
     RawData
 };
+
+const STYLE_ERROR: &str = "\x1b[1;31merror:\x1b[0m";        // 1;31 = bold red, 0m = reset
+const STYLE_WARNING: &str = "\x1b[1;33mwarning:\x1b[0m";    // bold yellow
+const STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
+
 
 #[derive(Debug, Parser)]
 #[command(
@@ -118,9 +124,26 @@ struct Opt {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    // initial config
     let opt = Opt::parse();
 
+    // if language listing
+    if opt.list {
+        // api languages listing
+        let listing_response = list_languages();
+
+        if let Some((Level::Error, msg)) = &listing_response.message {
+            eprintln!("{STYLE_ERROR} {msg}");
+            std::process::exit(1);
+        } else {
+            for lang in &listing_response.payload {
+                println!("{lang}");
+            }
+            return Ok(());
+        }
+    }
+
+
+    // initial config
     let mode = if opt.quote {
         GameMode::Quote
     } else if opt.zen {
@@ -145,8 +168,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config_response = validate_config(initial_config);
 
     if let Some((Level::Error, msg)) = &config_response.message {
-        eprintln!("\x1b[1;31merror:\x1b[0m {}", msg); // 1;31 = bold red, 0m = reset
-        return Ok(());
+        eprintln!("{STYLE_ERROR} {msg}");
+        std::process::exit(1);
     }
 
     let config = config_response.payload;
@@ -155,8 +178,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let generation_response = generate_content(&config);
 
     if let Some((Level::Error, msg)) = &generation_response.message {
-        eprintln!("\x1b[1;31merror:\x1b[0m {}", msg);
-        return Ok(());
+        eprintln!("{STYLE_ERROR} {msg}");
+        std::process::exit(1);
     }
 
     let words = &generation_response.payload;
