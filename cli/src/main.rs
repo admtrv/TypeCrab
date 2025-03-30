@@ -2,30 +2,53 @@
  * cli/src/main.rs
  */
 
-pub mod test;
+mod tui;
+mod logic;
 
 use std::{
     io,
-    thread::sleep,
     time::Duration,
 };
-
-use clap::{ArgGroup, Parser};
-
-use crossterm::{
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+use std::time::Instant;
+use clap::{
+    ArgGroup,
+    Parser
 };
-
+use crossterm::{
+    event,
+    execute,
+    terminal::{
+        disable_raw_mode,
+        enable_raw_mode,
+        EnterAlternateScreen,
+        LeaveAlternateScreen
+    }
+};
+use crossterm::event::{
+    Event,
+    KeyCode,
+    KeyEventKind,
+    KeyModifiers
+};
 use ratatui::{
     backend::CrosstermBackend,
-    Terminal,
+    Terminal
+};
+use core::{
+    generate_content,
+    validate_config,
+    GameMode,
+    Config,
+    Level
 };
 
-use core::{generate_content, validate_config, GameMode, TestConfig};
+use tui::TestView;
+use tui::ResultView;
 
-use crate::test::TestView;
-
+use logic::{
+    Test,
+    RawData
+};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -68,9 +91,9 @@ struct Opt {
     #[arg(short, long)]
     numbers: bool,
 
-    /// Enable backtracking of completed words [default]
-    #[arg(long, default_value_t = true)]
-    backtrack: bool,
+    /// Disable backtracking of completed words
+    #[arg(long = "strict", action = clap::ArgAction::SetTrue)]
+    strict: bool,
 
     /// Enable sudden death on first mistake
     #[arg(long)]
@@ -93,8 +116,9 @@ struct Opt {
     time: u32,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
 
+    // initial config
     let opt = Opt::parse();
 
     let mode = if opt.quote {
@@ -105,7 +129,7 @@ fn main() {
         GameMode::Words
     };
 
-    let initial_config = TestConfig {
+    let initial_config = Config {
         mode,
         language: opt.language,
         file: opt.file,
@@ -113,35 +137,94 @@ fn main() {
         time_limit: opt.time,
         punctuation: opt.punctuation,
         numbers: opt.numbers,
-        backtrack: opt.backtrack,
+        backtrack: !opt.strict,
         death: opt.death,
     };
 
+    // api config validation
     let config_response = validate_config(initial_config);
+
+    if let Some((Level::Error, msg)) = &config_response.message {
+        eprintln!("\x1b[1;31merror:\x1b[0m {}", msg); // 1;31 = bold red, 0m = reset
+        return Ok(());
+    }
 
     let config = config_response.payload;
 
+    // api words generation
     let generation_response = generate_content(&config);
 
-    let view = TestView {
-        words: &generation_response.payload,
-        status: config_response.message.clone().or(generation_response.message.clone()),
-    };
+    if let Some((Level::Error, msg)) = &generation_response.message {
+        eprintln!("\x1b[1;31merror:\x1b[0m {}", msg);
+        return Ok(());
+    }
 
-    enable_raw_mode().unwrap();
+    let words = &generation_response.payload;
+
+    // new test
+    let mut test = Test::new(words.clone(), &config);
+
+    // entering tui
+    enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen).unwrap();
+    execute!(stdout, EnterAlternateScreen)?;
 
     let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let mut terminal = Terminal::new(backend)?;
 
-    terminal.draw(|f| {
-        let area = f.area();
-        f.render_widget(view, area);
-    }).unwrap();
+    let status_message = config_response.message.clone().or(generation_response.message.clone());
+    let mut show_message = status_message.clone();
+    let message_start = Instant::now();
 
-    sleep(Duration::from_secs(5));
+    // main test cycle
+    loop {
+        if event::poll(Duration::from_millis(10))? {
+            if let Event::Key(key) = event::read()? {   // processing entered key
+                test.handle_key(key);
 
-    disable_raw_mode().unwrap();
-    execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+                // hot keys
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Esc => break,
+                        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            break
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        if test.complete {
+            break;
+        }
+
+        // status message
+        if let Some(_) = show_message {
+            if message_start.elapsed().as_secs() >= 3 {
+                show_message = None;
+            }
+        }
+
+        // rendering current state
+        terminal.draw(|f| {
+            let size = f.area();
+            let view = TestView {
+                test: &test,
+                status: show_message.clone(),
+            };
+            f.render_widget(view, size);
+        })?;
+    }
+
+    // returning from tui
+    disable_raw_mode()?;
+    execute!(io::stdout(), LeaveAlternateScreen)?;
+
+    // getting raw test data
+    let raw_results = RawData::from(&test);
+
+    // api result generation from raw data
+
+    Ok(())
 }

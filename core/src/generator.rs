@@ -4,10 +4,12 @@
 
 use std::{
     fs,
-    io::{self, BufRead},
-    path::Path,
+    io::{
+        self,
+        BufRead
+    },
+    path::Path
 };
-
 use rand::{
     prelude::IndexedRandom,
     rng,
@@ -15,7 +17,10 @@ use rand::{
 };
 
 use crate::{
-    config::{GameMode, TestConfig},
+    config::{
+        GameMode,
+        Config
+    },
     response::Response,
 };
 
@@ -31,7 +36,7 @@ const NUMBER_PROBABILITY: f64 = 0.2;
 pub type GeneratorResponse = Response<Vec<String>>;
 
 // api function, generates test content according to config
-pub fn generate_content(config: &TestConfig) -> GeneratorResponse {
+pub fn generate_content(config: &Config) -> GeneratorResponse {
 
     // if user specified file, read from it directly
     if let Some(user_file) = &config.file {
@@ -94,7 +99,7 @@ fn load_quote(lang: &str) -> Result<Vec<String>, String> {
     Ok(lines)
 }
 
-fn finalize_lines(lines: Vec<String>, config: &TestConfig) -> Vec<String> {
+fn finalize_lines(lines: Vec<String>, config: &Config) -> Vec<String> {
     let mut rng = rng();
 
     let base_words: Vec<String> = lines
@@ -131,10 +136,14 @@ fn split_lines(lines: Vec<String>) -> Vec<String> {
     let mut result = Vec::new();
 
     for (i, line) in lines.into_iter().enumerate() {
-        let mut words: Vec<String> = line.split_whitespace().map(|w| w.to_string()).collect();
+        let mut words: Vec<String> = line
+            .split_whitespace()
+            .map(|w| w.to_string())
+            .collect();
 
-        if i != len - 1 {
-            words.push("\n".to_string());
+        if !words.is_empty() && i != len - 1 {
+            let last = words.len() - 1;
+            words[last].push('\n');
         }
 
         result.extend(words);
@@ -142,6 +151,7 @@ fn split_lines(lines: Vec<String>) -> Vec<String> {
 
     result
 }
+
 
 fn load_file<P: AsRef<Path>>(path: P) -> io::Result<Vec<String>> {
     let file = fs::File::open(&path)?;

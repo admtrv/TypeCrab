@@ -2,13 +2,20 @@
  * core/src/config.rs
  */
 
-use std::{fs, path::Path};
-use crate::response::{Level, Response};
+use std::{
+    fs,
+    path::Path
+};
+
+use crate::response::{
+    Level,
+    Response
+};
 
 const WORDS_DIR: &str = "resources/words";
 const QUOTES_DIR: &str = "resources/quotes";
 
-pub type ConfigResponse = Response<TestConfig>;
+pub type ConfigResponse = Response<Config>;
 
 #[derive(Debug, Clone, Copy)]
 pub enum GameMode {
@@ -18,7 +25,7 @@ pub enum GameMode {
 }
 
 #[derive(Debug)]
-pub struct TestConfig {
+pub struct Config {
     pub mode: GameMode,
     pub language: String,
     pub file: Option<String>,
@@ -30,7 +37,7 @@ pub struct TestConfig {
     pub death: bool,
 }
 
-impl Default for TestConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
             mode: GameMode::Words,
@@ -47,7 +54,7 @@ impl Default for TestConfig {
 }
 
 // api function, that returns modified config if something wrong with initial
-pub fn validate_config(mut config: TestConfig) -> ConfigResponse {
+pub fn validate_config(mut config: Config) -> ConfigResponse {
     let mut messages: Vec<String> = Vec::new();
     let mut level = Level::Info;
 
@@ -141,7 +148,7 @@ pub fn validate_config(mut config: TestConfig) -> ConfigResponse {
     build_response(config, messages, level)
 }
 
-fn build_response(config: TestConfig, notes: Vec<String>, level: Level) -> ConfigResponse {
+fn build_response(config: Config, notes: Vec<String>, level: Level) -> ConfigResponse {
     if notes.is_empty() {
         return Response::plain(config);
     }
