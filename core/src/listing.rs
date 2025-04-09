@@ -5,10 +5,7 @@
 use std::fs;
 use std::path::Path;
 
-use crate::{
-    response::Response,
-    WORDS_DIR,
-};
+use crate::{response::Response, SCHEMES_DIR, WORDS_DIR};
 
 pub type ListingResponse = Response<Vec<String>>;
 
@@ -27,6 +24,27 @@ pub fn list_languages() -> ListingResponse {
 
     if langs.is_empty() {
         Response::with_error(Vec::new(), "no languages found")
+    } else {
+        langs.sort();
+        Response::plain(langs)
+    }
+}
+
+// api function, that lists available color schemes
+pub fn list_schemes() -> ListingResponse {
+    let dir = Path::new(SCHEMES_DIR);
+
+    let Ok(entries) = fs::read_dir(dir) else {
+        return Response::with_error(Vec::new(), format!("cannot read directory '{}'", dir.display()));
+    };
+
+    let mut langs = entries
+        .flatten()
+        .filter_map(|e| e.path().file_stem()?.to_str().map(|s| s.to_string()))
+        .collect::<Vec<_>>();
+
+    if langs.is_empty() {
+        Response::with_error(Vec::new(), "no color schemes found")
     } else {
         langs.sort();
         Response::plain(langs)

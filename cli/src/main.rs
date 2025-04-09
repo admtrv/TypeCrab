@@ -38,6 +38,8 @@ use core::{
     generate_content,
     validate_config,
     list_languages,
+    list_schemes,
+    SCHEMES_DIR,
     GameMode,
     Config,
     Level,
@@ -46,6 +48,7 @@ use core::{
 
 use tui::TestView;
 use tui::ResultView;
+use tui::load_scheme_file;
 
 use logic::{
     Test
@@ -69,13 +72,17 @@ const STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
 ))]
 #[command(group(
     ArgGroup::new("source")
-        .args(&["language", "file"])
+        .args(&["language", "language_file"])
         .multiple(false)
 ))]
 struct Opt {
-    /// List installed languages
-    #[arg(long)]
-    list: bool,
+    /// List available languages
+    #[arg(long = "list-languages")]
+    list_languages: bool,
+
+    /// List available color schemes
+    #[arg(long = "list-schemes")]
+    list_schemes: bool,
 
     /// Enable words mode [default]
     #[arg(short, long)]
@@ -110,8 +117,16 @@ struct Opt {
     language: String,
 
     /// Specify custom test file
-    #[arg(long, value_name = "path")]
-    file: Option<String>,
+    #[arg(long = "language-file", value_name = "path")]
+    language_file: Option<String>,
+
+    /// Specify color scheme
+    #[arg(short, long, value_name = "lang", default_value = "monokai")]
+    scheme: String,
+
+    /// Specify custom color scheme file
+    #[arg(long = "scheme-file", value_name = "path")]
+    scheme_file: Option<String>,
 
     /// Specify word count
     #[arg(short, long, value_name = "n", default_value_t = 25)]
@@ -127,7 +142,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt = Opt::parse();
 
     // if language listing
-    if opt.list {
+    if opt.list_languages {
         // api languages listing
         let listing_response = list_languages();
 
@@ -139,6 +154,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{lang}");
             }
             return Ok(());
+        }
+    }
+
+    // if color schemes listing
+    if opt.list_schemes {
+        // api color schemes listing
+        let listing_response = list_schemes();
+
+        if let Some((Level::Error, msg)) = &listing_response.message {
+            eprintln!("{STYLE_ERROR} {msg}");
+            std::process::exit(1);
+        } else {
+            for lang in &listing_response.payload {
+                println!("{lang}");
+            }
+            return Ok(());
+        }
+    }
+
+    if let Some(path) = &opt.scheme_file {
+        if let Err(msg) = load_scheme_file(path) {
+            eprintln!("{STYLE_ERROR} {msg}");
+            std::process::exit(1);
+        }
+    } else {
+        let path = format!("{}/{}.css", SCHEMES_DIR, opt.scheme);
+        if let Err(msg) = load_scheme_file(&path) {
+            eprintln!("{STYLE_ERROR} {msg}");
+            std::process::exit(1);
         }
     }
 
@@ -155,7 +199,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let initial_config = Config {
         mode,
         language: opt.language,
-        file: opt.file,
+        file: opt.language_file,
         word_count: opt.count,
         time_limit: opt.time,
         punctuation: opt.punctuation,

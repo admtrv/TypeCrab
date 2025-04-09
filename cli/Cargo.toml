@@ -16,3 +16,4 @@ ratatui = { workspace = true }
 crossterm = { workspace = true }
 unicode-width = { workspace = true }
 once_cell = { workspace = true }
+regex = { workspace = true }
