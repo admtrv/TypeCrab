@@ -49,8 +49,8 @@
 - Handles formatting logic (e.g., splitting quotes into words)
 
 ### `core/listing.rs`
-- Provides language listing functionality via `list_languages()`
-- Scans the `resources/words` directory and returns file stem names as language codes
+- Provides listing functionality for both languages and color schemes
+- Scans directories and returns file stem names as identifiers
 
 ### `core/results.rs`
 - Provides core data structures `RawResults` for raw test data and `FinalResults` for final performance summary (accuracy, speed, etc.)
@@ -77,7 +77,3 @@
 - Cli:
   1. Time limitation
   2. Zen mode
-  3. Color schemes changing (5 common color schemes). Suggestions:
-     1. [Dracula](https://draculatheme.com/)
-     2. [Monokai Pro](https://monokai.pro/)
-     3. [Gruvbox](https://github.com/morhetz/gruvbox)

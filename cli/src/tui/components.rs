@@ -83,6 +83,7 @@ fn scheme_color(var_name: &str, fallback: Color) -> Color {
 pub static COLOR_RED: Lazy<Color> = Lazy::new(|| scheme_color("red-color", Color::Red));
 pub static COLOR_GREEN: Lazy<Color> = Lazy::new(|| scheme_color("green-color", Color::Green));
 pub static COLOR_YELLOW: Lazy<Color> = Lazy::new(|| scheme_color("yellow-color", Color::LightYellow));
+pub static COLOR_ORANGE: Lazy<Color> = Lazy::new(|| scheme_color("orange-color", Color::Yellow));
 pub static COLOR_WHITE: Lazy<Color> = Lazy::new(|| scheme_color("white-color", Color::White));
 pub static COLOR_DARK:  Lazy<Color> = Lazy::new(|| scheme_color("dark-color", Color::Black));
 pub static COLOR_LIGHT: Lazy<Color> = Lazy::new(|| scheme_color("light-color", Color::DarkGray));
@@ -105,7 +106,7 @@ pub static STYLE_INACTIVE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR
 
 // block styles
 pub static STYLE_BACKGROUND: Lazy<Style> = Lazy::new(|| Style::default().bg(*COLOR_DARK));
-pub static STYLE_BORDER: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_YELLOW));
+pub static STYLE_BORDER: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_ORANGE));
 pub static STYLE_TITLE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE));
 
 
