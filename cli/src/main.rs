@@ -3,7 +3,7 @@
  */
 
 mod tui;
-mod logic;
+mod test;
 
 use std::{
     io,
@@ -34,6 +34,7 @@ use ratatui::{
     backend::CrosstermBackend,
     Terminal
 };
+
 use core::{
     generate_content,
     validate_config,
@@ -50,9 +51,7 @@ use tui::TestView;
 use tui::ResultView;
 use tui::load_scheme_file;
 
-use logic::{
-    Test
-};
+use test::Test;
 
 const STYLE_ERROR: &str = "\x1b[1;31merror:\x1b[0m";        // 1;31 = bold red, 0m = reset
 const STYLE_WARNING: &str = "\x1b[1;33mwarning:\x1b[0m";    // bold yellow
@@ -66,13 +65,23 @@ const STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
     version
 )]
 #[command(group(
-    ArgGroup::new("mode_group")
+    ArgGroup::new("mode")
         .args(&["words", "quote", "zen"])
         .multiple(false)
 ))]
 #[command(group(
-    ArgGroup::new("source")
+    ArgGroup::new("language_source")
         .args(&["language", "language_file"])
+        .multiple(false)
+))]
+#[command(group(
+    ArgGroup::new("scheme_source")
+        .args(&["scheme", "scheme_file"])
+        .multiple(false)
+))]
+#[command(group(
+    ArgGroup::new("listing")
+        .args(&["list_languages", "list_schemes"])
         .multiple(false)
 ))]
 struct Opt {
@@ -133,46 +142,36 @@ struct Opt {
     count: usize,
 
     /// Specify time limit
-    #[arg(short, long, value_name = "sec", default_value_t = 60)]
-    time: u32,
+    #[arg(short, long, value_name = "sec")]
+    time: Option<u32>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
+    // arguments parsing
     let opt = Opt::parse();
 
-    // if language listing
-    if opt.list_languages {
-        // api languages listing
-        let listing_response = list_languages();
+    // listing = end
+    if opt.list_languages || opt.list_schemes {
+        let response = if opt.list_languages {
+            list_languages()
+        } else {
+            list_schemes()
+        };
 
-        if let Some((Level::Error, msg)) = &listing_response.message {
+        if let Some((Level::Error, msg)) = &response.message {
             eprintln!("{STYLE_ERROR} {msg}");
             std::process::exit(1);
-        } else {
-            for lang in &listing_response.payload {
-                println!("{lang}");
-            }
-            return Ok(());
         }
+
+        for item in &response.payload {
+            println!("{item}");
+        }
+
+        return Ok(());
     }
 
-    // if color schemes listing
-    if opt.list_schemes {
-        // api color schemes listing
-        let listing_response = list_schemes();
-
-        if let Some((Level::Error, msg)) = &listing_response.message {
-            eprintln!("{STYLE_ERROR} {msg}");
-            std::process::exit(1);
-        } else {
-            for lang in &listing_response.payload {
-                println!("{lang}");
-            }
-            return Ok(());
-        }
-    }
-
+    // color scheme configuration
     if let Some(path) = &opt.scheme_file {
         if let Err(msg) = load_scheme_file(path) {
             eprintln!("{STYLE_ERROR} {msg}");
@@ -185,7 +184,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         }
     }
-
 
     // initial config
     let mode = if opt.quote {
@@ -239,9 +237,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let status_message = config_response.message.clone().or(generation_response.message.clone());
-    let mut show_message = status_message.clone();
-    let message_start = Instant::now();
+    let response_message = config_response.message.clone().or(generation_response.message.clone());
+    let mut warning_message = response_message.clone();
+
+    let test_start = Instant::now();
 
     // main test cycle
     loop {
@@ -262,26 +261,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
+        // test complete = test end
         if test.complete {
             break;
         }
 
-        // status message
-        if let Some(_) = show_message {
-            if message_start.elapsed().as_secs() >= 3 {
-                show_message = None;
+        // time end = test end
+        let elapsed = test_start.elapsed().as_secs();
+
+        if let Some(limit) = config.time_limit {
+            let time_left = limit as i64 - elapsed as i64;
+            if time_left <= 0 {
+                break;
             }
         }
+
+        // warning display - maximum priority
+        if let Some(_) = warning_message {
+            if test_start.elapsed().as_secs() >= 3 {
+                warning_message = None;
+            }
+        }
+
+        // status display
+        let status_string: Option<String> = if warning_message.is_some() { // priority - warning message
+            None
+        } else if let Some(limit) = config.time_limit { // next - time
+            let time_left = limit as i64 - elapsed as i64;
+            Some(time_left.to_string())
+        } else {
+            Some(format!("{}/{}", test.current_word, test.words.len())) // next - words
+        };
 
         // rendering current state
         terminal.draw(|f| {
             let size = f.area();
             let view = TestView {
                 test: &test,
-                status: show_message.clone(),
+                status: status_string.clone(),
+                warning: warning_message.clone(),
             };
             f.render_widget(view, size);
         })?;
+
     }
 
     // returning from tui

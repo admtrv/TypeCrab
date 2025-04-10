@@ -1,5 +1,5 @@
 /*
- * cli/src/logic.rs
+ * cli/src/test.rs
  */
 
 use crossterm::event::{

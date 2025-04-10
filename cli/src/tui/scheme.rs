@@ -1,5 +1,5 @@
 /*
- * cli/src/tui/components.rs
+ * cli/src/tui/scheme.rs
  */
 
 use once_cell::sync::{

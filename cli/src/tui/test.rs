@@ -22,8 +22,8 @@ use ratatui::{
 use unicode_width::UnicodeWidthStr;
 use core::Level;
 
-use crate::logic::Test;
-use crate::tui::components::{
+use crate::test::Test;
+use crate::tui::scheme::{
     STYLE_INFO, STYLE_WARNING, STYLE_ERROR,
     STYLE_CORRECT, STYLE_INCORRECT,
     STYLE_ACTIVE, STYLE_UNDERLINE, STYLE_INACTIVE,
@@ -32,7 +32,8 @@ use crate::tui::components::{
 
 pub struct TestView<'a> {
     pub test: &'a Test,
-    pub status: Option<(Level, String)>,
+    pub status: Option<String>,
+    pub warning: Option<(Level, String)>,
 }
 
 impl<'a> Widget for TestView<'a> {
@@ -54,7 +55,7 @@ impl<'a> Widget for TestView<'a> {
         prompt.render(layout[0], buf);
 
         // render status
-        let status_line = build_status(&self.status);
+        let status_line = build_status(&self.warning, &self.status);
         let status = Paragraph::new(status_line)
             .block(styled_block("Status"));
         status.render(layout[1], buf);
@@ -188,20 +189,27 @@ fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static
     spans
 }
 
-fn build_status(status: &Option<(Level, String)>) -> Line {
-    match status {
-        Some((level, msg)) => {
-            let (label, style) = match level {
-                Level::Info => ("info", *STYLE_INFO),
-                Level::Warning => ("warning", *STYLE_WARNING),
-                Level::Error => ("error", *STYLE_ERROR),
-            };
+fn build_status(warning: &Option<(Level, String)>, status: &Option<String>) -> Line<'static> {
 
-            Line::from(vec![
-                Span::styled(format!("{label}: "), style.clone()),
-                Span::styled(msg, *STYLE_ACTIVE),
-            ])
-        }
-        None => Line::from(""),
+    // priority - warning message
+    if let Some((level, warning)) = warning {
+        let (label, style) = match level {
+            Level::Info => ("info", *STYLE_INFO),
+            Level::Warning => ("warning", *STYLE_WARNING),
+            Level::Error => ("error", *STYLE_ERROR),
+        };
+
+        return Line::from(vec![
+            Span::styled(format!("{label}: "), style.clone()),
+            Span::styled(warning.clone(), *STYLE_ACTIVE),
+        ]);
     }
+
+    // else status - words or time
+    if let Some(status) = status {
+        return Line::from(Span::styled(status.clone(), *STYLE_ACTIVE));
+    }
+
+    // empty
+    Line::from("")
 }

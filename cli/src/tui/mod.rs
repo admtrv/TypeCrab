@@ -4,8 +4,8 @@
 
 mod test;
 mod result;
-mod components;
+mod scheme;
 
 pub use test::TestView;
 pub use result::ResultView;
-pub use components::load_scheme_file;
+pub use scheme::load_scheme_file;

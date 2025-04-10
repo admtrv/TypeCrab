@@ -31,7 +31,7 @@ pub struct Config {
     pub language: String,
     pub file: Option<String>,
     pub word_count: usize,
-    pub time_limit: u32,
+    pub time_limit: Option<u32>,
     pub punctuation: bool,
     pub numbers: bool,
     pub backtrack: bool,
@@ -45,7 +45,7 @@ impl Default for Config {
             language: "en".to_string(),
             file: None,
             word_count: 25,
-            time_limit: 60,
+            time_limit: None,
             punctuation: false,
             numbers: false,
             backtrack: true,
@@ -61,14 +61,14 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
 
     // word_count / time_limit validation
     if config.word_count == 0 {
-        config.word_count = 25;
+        config.word_count = 30;
         messages.push("invalid word count, set to 25".to_string());
         level.escalate(Level::Warning);
     }
 
-    if config.time_limit == 0 {
-        config.time_limit = 60;
-        messages.push("invalid time limit, set to 60".to_string());
+    if let Some(0) = config.time_limit {
+        config.time_limit = None;
+        messages.push("invalid time limit, disabled".to_string());
         level.escalate(Level::Warning);
     }
 

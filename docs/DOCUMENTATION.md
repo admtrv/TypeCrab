@@ -75,5 +75,5 @@
   1. Results generation logic
 
 - Cli:
-  1. Time limitation
-  2. Zen mode
+  1. Zen mode
+  2. Results view
