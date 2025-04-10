@@ -149,14 +149,14 @@ fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static
 
         if mismatch_happened {
             // after first mistake - everything red
-            spans.push(Span::styled(t_char.to_string(), *STYLE_INCORRECT));
+            spans.push(Span::styled(r_char.to_string(), *STYLE_INCORRECT));
         } else if t_char == r_char {
             // correct character - green
             spans.push(Span::styled(t_char.to_string(), *STYLE_CORRECT));
         } else {
             // first mistake - red and set flag
             mismatch_happened = true;
-            spans.push(Span::styled(t_char.to_string(), *STYLE_INCORRECT));
+            spans.push(Span::styled(r_char.to_string(), *STYLE_INCORRECT));
         }
         i += 1;
     }
