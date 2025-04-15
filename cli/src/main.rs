@@ -333,6 +333,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let final_results = raw_results.process_results();
+
+    println!("\nFinal Results:");
+    println!("Raw WPM: {:.2}", final_results.raw_wpm);
+    println!("WPM: {:.2}", final_results.wpm);
+    println!("Accuracy: {:.2}%", final_results.accuracy);
+    println!("Consistency: {:.2}%", final_results.consistency);
+    println!("Correct Keypresses: {}", final_results.key_presses.correct);
+    println!("Incorrect Keypresses: {}", final_results.key_presses.incorrect);
+    println!("Missed Keypresses: {}", final_results.key_presses.missed);
+    println!("Extra Keypresses: {}", final_results.key_presses.extra);
+    println!("Worst Keys (up to 3):");
+    if final_results.worst_keys.is_empty() {
+        println!("  None");
+    } else {
+        for (ch, count) in final_results.worst_keys {
+            println!("  '{}': {} errors", ch, count);
+        }
+    }
+
+    println!("Graph Data:");
+    if final_results.graph_data.is_empty() {
+        println!("  No data");
+    } else {
+        for (time, wpm, raw_wpm, incorrect, extra, missed) in final_results.graph_data {
+            println!(
+                "  Time: {:.1}s, WPM: {:.2}, Raw WPM: {:.2}, Incorrect: {}, Extra: {}, Missed: {}",
+                time, wpm, raw_wpm, incorrect, extra, missed
+            );
+        }
+    }
+
     // api final results generation from raw test results
 
     Ok(())
