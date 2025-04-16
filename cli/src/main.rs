@@ -333,8 +333,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let final_results = raw_results.process_results();
-
+    let final_results_response = raw_results.process_results();
+    let final_results = final_results_response.payload;
     println!("\nFinal Results:");
     println!("Raw WPM: {:.2}", final_results.raw_wpm);
     println!("WPM: {:.2}", final_results.wpm);

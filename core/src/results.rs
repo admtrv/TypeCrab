@@ -5,6 +5,8 @@
 use std::time::Duration;
 use std::collections::HashMap;
 
+use crate::{response::Response};
+
 // key representation
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Key {
@@ -57,6 +59,18 @@ pub struct KeyPresses {
     pub missed: usize,
 
 }
+
+impl Default for KeyPresses {
+    fn default() -> Self {
+        KeyPresses {
+            correct: 0,
+            incorrect: 0,
+            extra: 0,
+            missed: 0,
+        }
+    }
+}
+
 #[derive(Debug, Clone)] 
 pub struct FinalResults {
     pub wpm: f64,                       // Words per minute (correct chars only)
@@ -68,8 +82,25 @@ pub struct FinalResults {
     pub graph_data: Vec<(f64, f64, f64, usize, usize, usize)> // (time, wpm, raw_wpm, incorrect, extra, missed)
 }
 
+impl Default for FinalResults {
+    fn default() -> Self {
+        FinalResults {
+            wpm: 0.0,
+            raw_wpm: 0.0,
+            accuracy: 0.0,
+            consistency: 0.0,
+            key_presses: KeyPresses::default(),
+            worst_keys: Vec::new(),
+            graph_data: Vec::new(),
+        }
+    }
+}
+
 impl RawResults {
-    pub fn process_results(&self) -> FinalResults {
+    pub fn process_results(&self) -> Response<FinalResults> {
+        if self.events.is_empty() {
+            return Response::with_error(FinalResults::default(), "No typing events recorded");
+        }
         let mut correct_keypresses = 0;
         let mut incorrect_keypresses = 0;
         let mut extra_keypress = 0;
@@ -221,7 +252,7 @@ impl RawResults {
         worst_keys.sort_by(|a, b| b.1.cmp(&a.1));
         worst_keys.truncate(3);
         
-        FinalResults {
+        Response::plain(FinalResults {
             wpm,
             raw_wpm,
             accuracy,
@@ -234,6 +265,6 @@ impl RawResults {
             },
             worst_keys,
             graph_data
-        }
+        })
     }
 }
