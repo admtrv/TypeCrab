@@ -30,6 +30,7 @@ pub use results::{
     Key,
     Event,
     Word,
-    RawResults
+    RawResults,
+    process_results
 };
 
