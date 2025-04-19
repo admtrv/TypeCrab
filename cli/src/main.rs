@@ -349,9 +349,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if final_results.worst_keys.is_empty() {
         println!("  None");
     } else {
-        for (ch, count) in final_results.worst_keys {
-            println!("  '{}': {} errors", ch, count);
+        for (expected, typed, count) in final_results.worst_keys {
+            println!("Expected: '{}', Found: '{}', {} errors", expected, typed, count);
         }
+    }
+    for (expected, count) in final_results.errors{
+        println!("Errors with key '{}':  {} ", expected, count);
     }
 
     println!("Graph Data:");
@@ -365,7 +368,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             );
         }
     }
-
     // api final results generation from raw test results
 
     Ok(())

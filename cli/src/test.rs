@@ -94,6 +94,12 @@ impl Test {
                 if current.progress.is_empty() {
                     if self.backtrack && self.current_word > 0 {
                         self.prev_word();
+                        // save backspace key press in prev word
+                        self.words[self.current_word].events.push(Event {
+                            time: elapsed,
+                            key: event_key,
+                            correct: None
+                        });
                     }
                 } else {
                     current.progress.pop();
