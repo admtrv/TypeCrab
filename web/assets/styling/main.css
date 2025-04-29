@@ -1,42 +1,84 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --dark-color: #252739;
+  --light-color: #4c4f69;
+  --white-color: #eff1f5;
+  --red-color: #e78284;
+  --orange-color: #ef9f76;
+  --yellow-color: #e5c890;
+  --green-color: #a6d189;
+  --blue-color: #8caaee;
+  --purple-color: #ca9ee6;
+}
+ul,
+ol,
+menu {
+  list-style: none;
+}
+li {
+  height: fit-content;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+nav a {
+  font-size: 2rem;
+  transition: color 0.3s ease-in-out;
+}
+nav a:hover {
+  color: var(--yellow-color);
+}
 body {
-    background-color: #0f1116;
-    color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 20px;
+  font-size: 16px;
+  background-color: var(--dark-color);
+  color: var(--orange-color);
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
 }
-
-#hero {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+#main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
-
-#links {
-    width: 400px;
-    text-align: left;
-    font-size: x-large;
-    color: white;
-    display: flex;
-    flex-direction: column;
+footer,
+header {
+  display: flex;
+  height: 100px;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--light-color);
+  justify-content: space-around;
 }
-
-#links a {
-    color: white;
-    text-decoration: none;
-    margin-top: 20px;
-    margin: 10px 0px;
-    border: white 1px solid;
-    border-radius: 5px;
-    padding: 10px;
+#logo {
+  height: 100px;
+  width: 200px;
+  transform: rotate(10deg);
 }
-
-#links a:hover {
-    background-color: #1f1f1f;
-    cursor: pointer;
+ul {
+  display: flex;
+  gap: 20px;
 }
-
-#header {
-    max-width: 1200px;
+.avatar {
+  border-radius: 100%;
+  width: 60px;
+  height: 60px;
+}
+.avatar:hover {
+  transform: scale(1.2);
 }
