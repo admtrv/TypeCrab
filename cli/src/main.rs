@@ -345,14 +345,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Incorrect Keypresses: {}", final_results.key_presses.incorrect);
     println!("Missed Keypresses: {}", final_results.key_presses.missed);
     println!("Extra Keypresses: {}", final_results.key_presses.extra);
-    println!("Worst Keys (up to 3):");
-    if final_results.worst_keys.is_empty() {
-        println!("  None");
-    } else {
-        for (expected, typed, count) in final_results.worst_keys {
-            println!("Expected: '{}', Found: '{}', {} errors", expected, typed, count);
-        }
-    }
     for (expected, count) in final_results.errors{
         println!("Errors with key '{}':  {} ", expected, count);
     }

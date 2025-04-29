@@ -78,7 +78,6 @@ pub struct FinalResults {
     pub key_presses: KeyPresses,        // keypresses data
     pub accuracy: f64,                  // Percentage of correct keypresses  
     pub consistency: f64,               // Consistency score 
-    pub worst_keys: Vec<(char, char, usize)>, // Keys with most errors 
     pub graph_data: Vec<(f64, f64, f64, usize, usize, usize)>, // (time, wpm, raw_wpm, incorrect, extra, missed)
     pub errors: Vec<(char, usize)>
 }
@@ -91,7 +90,6 @@ impl Default for FinalResults {
             accuracy: 0.0,
             consistency: 0.0,
             key_presses: KeyPresses::default(),
-            worst_keys: Vec::new(),
             graph_data: Vec::new(),
             errors: Vec::new(),
         }
@@ -100,7 +98,6 @@ impl Default for FinalResults {
 
 pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     if raw_results.events.is_empty() {
-        println!("ERROR: No typing events recorded");
         return Response::with_error(FinalResults::default(), "No typing events recorded");
     }
 
@@ -129,66 +126,46 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     } else {
         0.0
     };
-    println!("INFO: Total duration: {} seconds, first_time: {:?}, last_time: {:?}", total_duration, first_time, last_time);
 
     for (word_idx, word) in raw_results.words.iter().enumerate() {
-        println!("INFO: Processing word {}: text='{}', progress='{}', events_count={}", word_idx, word.text, word.progress, word.events.len());
         let expected = word.text.chars().collect::<Vec<_>>();
         let mut char_index = 0;
 
-        for (event_idx, event) in word.events.iter().enumerate() {
-            println!("DEBUG: Word {} Event {}: key={:?}, correct={:?}, char_index={}, time={:?}", word_idx, event_idx, event.key, event.correct, char_index, event.time);
+        for event in word.events.iter() {
             if let Some(correct) = event.correct {
                 if char_index >= expected.len() {
-                    println!("WARN: char_index {} exceeds expected length {} for word '{}'", char_index, expected.len(), word.text);
+                    // Handle case where char_index exceeds expected length
                 }
                 char_index += 1;
                 if correct {
                     correct_keypresses += 1;
                     total_correct_chars += 1;
                     total_typed_chars += 1;
-                    println!("DEBUG: Correct keypress: char_index={}, expected={:?}", char_index - 1, expected.get(char_index - 1));
                 } else {
                     incorrect_keypresses += 1;
                     total_typed_chars += 1;
                     if let Key::Char(typed) = event.key {
                         if char_index <= expected.len() {
                             let expected_char = expected[char_index - 1];
-                            if expected_char == typed {
-                                println!("ERROR: Unexpected error counted: word='{}', char_index={}, expected='{}', typed='{}'", word.text, char_index - 1, expected_char, typed);
-                            }
                             *key_errors.entry((expected_char, typed)).or_insert(0) += 1;
-                            println!("DEBUG: Incorrect keypress: char_index={}, expected='{}', typed='{}'", char_index - 1, expected_char, typed);
-                        } else {
-                            println!("WARN: Incorrect keypress beyond word length: typed='{}', word='{}'", typed, word.text);
                         }
-                    } else {
-                        println!("DEBUG: Non-char incorrect keypress: key={:?}", event.key);
                     }
                 }
             } else if Key::Backspace == event.key {
                 if char_index > 0 {
                     char_index -= 1;
-                    println!("DEBUG: Backspace: char_index reduced to {}", char_index);
-                } else {
-                    println!("WARN: Backspace at char_index=0 for word '{}'", word.text);
                 }
-            } else {
-                println!("DEBUG: System event ignored: key={:?}", event.key);
             }
         }
 
         let typed = word.progress.chars().collect::<Vec<_>>();
-        println!("INFO: Word {} summary: expected_len={}, typed_len={}, char_index={}", word_idx, expected.len(), typed.len(), char_index);
 
         if typed.len() > expected.len() {
             extra_keypress += typed.len() - expected.len();
-            println!("WARN: Extra keypresses: word='{}', extra_count={}", word.text, typed.len() - expected.len());
         }
 
         if expected.len() > typed.len() {
             missed_keypresses += expected.len() - typed.len();
-            println!("WARN: Missed keypresses: word='{}', missed_count={}", word.text, expected.len() - typed.len());
         }
     }
 
@@ -212,7 +189,6 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     } else {
         0.0
     };
-    println!("INFO: WPM: {}, Raw WPM: {}, Accuracy: {}%, Total keypresses: {}", wpm, raw_wpm, accuracy, total_keypresses);
 
     // Graph data calculation
     let mut current_correct_chars = 0;
@@ -291,13 +267,7 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     } else {
         0.0
     };
-    println!("INFO: Consistency: {}%, Inter-key times count: {}", consistency, inter_key_times.len());
 
-    let mut worst_keys: Vec<(char, char, usize)> = key_errors.clone().into_iter()
-        .map(|((expected, typed), count)| (expected, typed, count))
-        .collect();
-    worst_keys.sort_by(|a, b| b.2.cmp(&a.2));
-    worst_keys.truncate(3);
     let mut error_counts: HashMap<char, usize> = HashMap::new();
     
     // Sum counts for each expected character
@@ -308,7 +278,6 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     // Convert to vector and sort
     let mut errors: Vec<(char, usize)> = error_counts.into_iter().collect();
     errors.sort_by(|a, b| b.1.cmp(&a.1));
-    println!("INFO: Worst keys: {:?}", worst_keys);
 
     Response::plain(FinalResults {
         wpm,
@@ -321,9 +290,7 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
             extra: extra_keypress,
             missed: missed_keypresses
         },
-        worst_keys,
         graph_data,
         errors
     })
 }
-
