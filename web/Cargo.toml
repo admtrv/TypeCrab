@@ -1,13 +1,19 @@
-# web/Cargo.toml
-
 [package]
 name = "web"
-version = "0.2.0"
+version = "0.1.0"
+authors = ["Artem Zaitsev <Aldeimeter666@gmail.com>"]
 edition = "2021"
 
-[dependencies]
-wasm-bindgen = { workspace = true }
-core = { path = "../core" }
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[lib]
-crate-type = ["cdylib"]
+[dependencies]
+dioxus = { version = "0.6.0", features = [] }
+
+[features]
+default = ["web"]
+# The feature that are only required for the web = ["dioxus/web"] build target should be optional and only enabled in the web = ["dioxus/web"] feature
+web = ["dioxus/web"]
+# The feature that are only required for the desktop = ["dioxus/desktop"] build target should be optional and only enabled in the desktop = ["dioxus/desktop"] feature
+desktop = ["dioxus/desktop"]
+# The feature that are only required for the mobile = ["dioxus/mobile"] build target should be optional and only enabled in the mobile = ["dioxus/mobile"] feature
+mobile = ["dioxus/mobile"]
