@@ -127,7 +127,7 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
         0.0
     };
 
-    for (word_idx, word) in raw_results.words.iter().enumerate() {
+    for (_word_idx, word) in raw_results.words.iter().enumerate() {
         let expected = word.text.chars().collect::<Vec<_>>();
         let mut char_index = 0;
 
@@ -195,7 +195,7 @@ pub fn process_results(raw_results: RawResults) -> Response<FinalResults> {
     let mut current_typed_chars = 0;
     let mut current_incorrect = 0;
     let mut current_extra = 0;
-    let mut current_missed = 0;
+    let current_missed = 0;
     let mut last_time_secs = 0.0;
 
     for event in &raw_results.events {

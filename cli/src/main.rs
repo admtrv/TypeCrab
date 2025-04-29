@@ -7,45 +7,47 @@ mod test;
 
 use std::{
     io,
-    time::Duration,
+    time::{
+        Duration,
+        Instant,
+    },
 };
-use std::time::Instant;
 use clap::{
     ArgGroup,
-    Parser
+    Parser,
 };
 use crossterm::{
     event,
+    event::{
+        Event,
+        KeyCode,
+        KeyEventKind,
+        KeyModifiers,
+    },
     execute,
     terminal::{
         disable_raw_mode,
         enable_raw_mode,
         EnterAlternateScreen,
-        LeaveAlternateScreen
-    }
-};
-use crossterm::event::{
-    Event,
-    KeyCode,
-    KeyEventKind,
-    KeyModifiers
+        LeaveAlternateScreen,
+    },
 };
 use ratatui::{
     backend::CrosstermBackend,
-    Terminal
+    Terminal,
 };
 
 use core::{
-    generate_content,
-    validate_config,
-    list_languages,
-    list_schemes,
-    SCHEMES_DIR,
-    GameMode,
     Config,
+    GameMode,
     Level,
     RawResults,
-    process_results
+    SCHEMES_DIR,
+    generate_content,
+    list_languages,
+    list_schemes,
+    process_results,
+    validate_config,
 };
 
 use tui::TestView;
@@ -55,8 +57,8 @@ use tui::load_scheme_file;
 use test::Test;
 
 const STYLE_ERROR: &str = "\x1b[1;31merror:\x1b[0m";        // 1;31 = bold red, 0m = reset
-const STYLE_WARNING: &str = "\x1b[1;33mwarning:\x1b[0m";    // bold yellow
-const STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
+const _STYLE_WARNING: &str = "\x1b[1;33mwarning:\x1b[0m";    // bold yellow
+const _STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
 
 
 #[derive(Debug, Parser)]
@@ -307,60 +309,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     }
 
-    // returning from tui
-    disable_raw_mode()?;
-    execute!(io::stdout(), LeaveAlternateScreen)?;
-
-    // getting raw test results, for now just printing
     let raw_results = RawResults::from(&test);
 
-    println!("Results:");
-    for (i, word) in raw_results.words.iter().enumerate() {
-        println!("Word {i}:");
-        println!("  Text:     {}", word.text);
-        println!("  Entered:  {}", word.progress);
-        println!("  Events:");
-        for event in &word.events {
-            println!(
-                "    - {:?} {:?} [{}]",
-                event.key,
-                event.time,
-                match event.correct {
-                    Some(true) => "correct",
-                    Some(false) => "mistake",
-                    None => "system",
-                }
-            );
-        }
-    }
-    
-    let final_results_response = process_results(raw_results); 
-    let final_results = final_results_response.payload;
-    println!("\nFinal Results:");
-    println!("Raw WPM: {:.2}", final_results.raw_wpm);
-    println!("WPM: {:.2}", final_results.wpm);
-    println!("Accuracy: {:.2}%", final_results.accuracy);
-    println!("Consistency: {:.2}%", final_results.consistency);
-    println!("Correct Keypresses: {}", final_results.key_presses.correct);
-    println!("Incorrect Keypresses: {}", final_results.key_presses.incorrect);
-    println!("Missed Keypresses: {}", final_results.key_presses.missed);
-    println!("Extra Keypresses: {}", final_results.key_presses.extra);
-    for (expected, count) in final_results.errors{
-        println!("Errors with key '{}':  {} ", expected, count);
-    }
-
-    println!("Graph Data:");
-    if final_results.graph_data.is_empty() {
-        println!("  No data");
-    } else {
-        for (time, wpm, raw_wpm, incorrect, extra, missed) in final_results.graph_data {
-            println!(
-                "  Time: {:.1}s, WPM: {:.2}, Raw WPM: {:.2}, Incorrect: {}, Extra: {}, Missed: {}",
-                time, wpm, raw_wpm, incorrect, extra, missed
-            );
-        }
-    }
     // api final results generation from raw test results
+    let final_results = process_results(raw_results).payload;
 
+    // render results
+    loop {
+        terminal.draw(|f| {
+            let size = f.area();
+            let view = ResultView { results: &final_results };
+            f.render_widget(view, size);
+        })?;
+
+        if event::poll(Duration::from_millis(50))? {
+            match crossterm::event::read()? {
+                Event::Key(_) => break,
+                Event::Resize(_, _) => continue,
+                _ => {}
+            }
+        }
+    }
+
+    // exiting tui
+    disable_raw_mode()?;
+    execute!(io::stdout(), LeaveAlternateScreen)?;
     Ok(())
 }

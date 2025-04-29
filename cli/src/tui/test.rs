@@ -8,27 +8,48 @@ use ratatui::{
         Constraint,
         Direction,
         Layout,
-        Rect
+        Rect,
+    },
+    prelude::{
+        Modifier,
+        Style,
     },
     text::{
         Line,
-        Span
+        Span,
     },
     widgets::{
         Paragraph,
-        Widget
+        Widget,
     },
 };
+use once_cell::sync::Lazy;
 use unicode_width::UnicodeWidthStr;
 use core::Level;
 
 use crate::test::Test;
 use crate::tui::scheme::{
-    STYLE_INFO, STYLE_WARNING, STYLE_ERROR,
-    STYLE_CORRECT, STYLE_INCORRECT,
-    STYLE_ACTIVE, STYLE_UNDERLINE, STYLE_INACTIVE,
     styled_block,
+    COLOR_GREEN,
+    COLOR_YELLOW,
+    COLOR_RED,
+    COLOR_WHITE,
+    COLOR_LIGHT
 };
+
+// message level styles
+static STYLE_INFO: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_GREEN));
+static STYLE_WARNING: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_YELLOW));
+static STYLE_ERROR: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED));
+
+// input feedback styles
+static STYLE_CORRECT: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_GREEN));
+static STYLE_INCORRECT: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED));
+
+// current character style
+static STYLE_ACTIVE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE));
+static STYLE_UNDERLINE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE).add_modifier(Modifier::UNDERLINED));
+static STYLE_INACTIVE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_LIGHT));
 
 pub struct TestView<'a> {
     pub test: &'a Test,

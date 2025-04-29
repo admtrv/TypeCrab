@@ -4,18 +4,19 @@
 
 use once_cell::sync::{
     Lazy,
-    OnceCell
+    OnceCell,
 };
-use ratatui::prelude::{
-    Color,
-    Modifier,
-    Span,
-    Style
-};
-use ratatui::widgets::{
-    Block,
-    BorderType,
-    Borders
+use ratatui::{
+    prelude::{
+        Color,
+        Span,
+        Style,
+    },
+    widgets::{
+        Block,
+        BorderType,
+        Borders,
+    },
 };
 use regex::Regex;
 use std::collections::HashMap;
@@ -26,7 +27,7 @@ static SCHEME_VARS: OnceCell<HashMap<String, String>> = OnceCell::new();
 // function to load scheme into hash map
 pub fn load_scheme_file(path: &str) -> Result<(), String> {
     let content = fs::read_to_string(path)
-        .map_err(|e| format!("cannot read scheme file '{}'", path))?;
+        .map_err(|_e| format!("cannot read scheme file '{}'", path))?;
     let map = parse_css_variables(&content)?;
 
     SCHEME_VARS
@@ -39,7 +40,7 @@ pub fn load_scheme_file(path: &str) -> Result<(), String> {
 // parse css lines like '--var-name: #rrggbb;'
 fn parse_css_variables(content: &str) -> Result<HashMap<String, String>, String> {
     let re = Regex::new(r"--([^:]+):\s*([^;]+);")
-        .map_err(|e| "invalid regex".to_string())?;
+        .map_err(|_e| "invalid regex".to_string())?;
 
     let mut map = HashMap::new();
     for caps in re.captures_iter(content) {
@@ -87,22 +88,6 @@ pub static COLOR_ORANGE: Lazy<Color> = Lazy::new(|| scheme_color("orange-color",
 pub static COLOR_WHITE: Lazy<Color> = Lazy::new(|| scheme_color("white-color", Color::White));
 pub static COLOR_DARK:  Lazy<Color> = Lazy::new(|| scheme_color("dark-color", Color::Black));
 pub static COLOR_LIGHT: Lazy<Color> = Lazy::new(|| scheme_color("light-color", Color::DarkGray));
-
-// common styles
-
-// message level styles
-pub static STYLE_INFO: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_GREEN));
-pub static STYLE_WARNING: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_YELLOW));
-pub static STYLE_ERROR: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED));
-
-// input feedback styles
-pub static STYLE_CORRECT: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_GREEN));
-pub static STYLE_INCORRECT: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED));
-
-// current character style
-pub static STYLE_ACTIVE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE));
-pub static STYLE_UNDERLINE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE).add_modifier(Modifier::UNDERLINED));
-pub static STYLE_INACTIVE: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_LIGHT));
 
 // block styles
 pub static STYLE_BACKGROUND: Lazy<Style> = Lazy::new(|| Style::default().bg(*COLOR_DARK));
