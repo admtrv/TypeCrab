@@ -8,8 +8,3 @@ pub use header::Header;
 mod footer;
 pub use footer::Footer;
 
-mod test;
-pub use test::TypingTest;
-
-mod settings;
-pub use settings::Settings;
