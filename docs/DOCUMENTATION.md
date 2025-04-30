@@ -70,10 +70,5 @@
 - Used for returning payloads along with contextual messages
 
 ## To Do
-
-- Core
-  1. Results generation logic
-
 - Cli:
   1. Zen mode
-  2. Results view
