@@ -1,7 +1,6 @@
 // The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
 // need dioxus
 use dioxus::prelude::*;
-
 use components::*;
 
 /// Define a components module that contains all shared components for our app.
@@ -22,6 +21,14 @@ fn main() {
 /// that takes some props and returns an Element. In this case, App takes no props because it is the root of our app.
 ///
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
+///
+#[derive(Routable, PartialEq, Clone)]
+enum Route {
+    #[route("/")]
+    TypingTest {},
+    #[route("/settings")]
+    Settings {}
+}
 #[component]
 fn App() -> Element {
     // The `rsx!` macro lets us define HTML inside of rust. It expands to an Element with all of our HTML inside.
@@ -30,8 +37,8 @@ fn App() -> Element {
         // we are using the `document::Link` component to add a link to our favicon and main CSS file into the head of our app.
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        Header {},
-        
+        Header {}
+        Router::<Route> {} 
         Footer {}
     }
 }

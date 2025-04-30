@@ -16,7 +16,7 @@ pub fn Header() -> Element {
                 ul { 
                     li {
                         a { 
-                            href: "/test",
+                            href: "/",
                             "Test"
                         }
                     }
