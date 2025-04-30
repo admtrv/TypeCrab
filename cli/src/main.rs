@@ -45,7 +45,8 @@ use core::{
     Config,
     Level,
     RawResults,
-    process_results
+    process_results,
+    language_from_str
 };
 
 use tui::TestView;
@@ -197,7 +198,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let initial_config = Config {
         mode,
-        language: opt.language,
+        language: language_from_str(&opt.language, mode),
         file: opt.language_file,
         word_count: opt.count,
         time_limit: opt.time,

@@ -19,8 +19,10 @@ use rand::{
 use crate::{
     config::{
         GameMode,
-        Config
+        Config,
+        Language
     },
+    languages::{WordsLanguages, QuotesLanguages},
     response::Response,
     WORDS_DIR,
     QUOTES_DIR,
@@ -57,17 +59,25 @@ pub fn generate_content(config: &Config) -> GeneratorResponse {
 
         // words mode
         GameMode::Words => {
-            match load_words(&config.language) {
-                Ok(lines) => GeneratorResponse::plain(finalize_lines(lines, config)),
-                Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+            if let Language::Words(lang) = config.language {
+                match load_words(lang.as_str()) {
+                    Ok(lines) => GeneratorResponse::plain(finalize_lines(lines, config)),
+                    Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+                }
+            } else {
+                GeneratorResponse::with_error(Vec::new(), "invalid language for words mode".to_string())
             }
         }
 
         // quote mode
         GameMode::Quote => {
-            match load_quote(&config.language) {
-                Ok(lines) => GeneratorResponse::plain(split_lines(lines)),
-                Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+            if let Language::Quotes(lang) = config.language {
+                match load_quote(lang.as_str()) {
+                    Ok(lines) => GeneratorResponse::plain(split_lines(lines)),
+                    Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+                }
+            } else {
+                GeneratorResponse::with_error(Vec::new(), "invalid language for quote mode".to_string())
             }
         }
 

@@ -6,6 +6,7 @@ mod config;
 mod generator;
 mod response;
 mod listing;
+mod languages;
 pub mod results;
 
 const WORDS_DIR: &str = "resources/words";
@@ -32,5 +33,8 @@ pub use results::{
     Word,
     RawResults,
     process_results
+};
+pub use languages::{
+    language_from_str
 };
 
