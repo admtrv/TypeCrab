@@ -187,7 +187,7 @@ fn main() -> io::Result<()> {
         println!("cargo:rustc-cfg=getrandom_backend=\"wasm_js\"");
     }
     let source = Path::new("../resources"); // Source directory
-    let destination = Path::new("../web/assets/"); // Destination directory
+    let destination = Path::new("../web/public/"); // Destination directory
 
     // Copy directory
     copy_dir_recursive(source, destination)?;
