@@ -34,7 +34,8 @@ use crate::tui::scheme::{
     COLOR_LIGHT,
     COLOR_RED,
     COLOR_WHITE,
-    COLOR_ORANGE
+    COLOR_ORANGE,
+    COLOR_DARK
 };
 
 // info block styles
@@ -49,6 +50,9 @@ static STYLE_KEY_ERR: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED)
 static STYLE_GRAPH_WPM: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_ORANGE));
 static STYLE_GRAPH_RAW: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_LIGHT));
 static STYLE_GRAPH_ERR: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_RED));
+static STYLE_GRAPH_BACKGROUND: Lazy<Style> = Lazy::new(|| Style::default().bg(*COLOR_DARK));
+static STYLE_GRAPH_AXIS: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_WHITE));
+static STYLE_GRAPH_LABEL: Lazy<Style> = Lazy::new(|| Style::default().fg(*COLOR_ORANGE));
 
 
 pub struct ResultView<'a> {
@@ -78,7 +82,10 @@ impl<'a> Widget for ResultView<'a> {
 
 fn draw_graph(results: &FinalResults, area: Rect, buf: &mut Buffer) {
     if results.graph_data.is_empty() {
-        Chart::default().block(styled_block("Graph")).render(area, buf);
+        Chart::default()
+            .block(styled_block("Graph"))
+            .style(*STYLE_GRAPH_BACKGROUND)
+            .render(area, buf);
         return;
     }
 
@@ -126,25 +133,34 @@ fn draw_graph(results: &FinalResults, area: Rect, buf: &mut Buffer) {
         .fold(0.0, f64::max)
         .ceil()
         .max(1.0);
-    
+
     let y_top = ((y_max / 10.0).ceil() * 10.0) as u64;
 
-    let x_labels: Vec<Line> = (0..=x_max as u64).map(|v| Line::from(v.to_string())).collect();
-    let y_labels: Vec<Line> = (0..=y_top).step_by(10).map(|v| Line::from(v.to_string())).collect();
+    let x_labels: Vec<Line> = (0..=x_max as u64)
+        .map(|v| Line::styled(v.to_string(), *STYLE_GRAPH_LABEL))
+        .collect();
+
+    let y_labels: Vec<Line> = (0..=y_top)
+        .step_by(10)
+        .map(|v| Line::styled(v.to_string(), *STYLE_GRAPH_LABEL))
+        .collect();
 
     Chart::new(datasets)
         .block(styled_block("Graph"))
+        .style(*STYLE_GRAPH_BACKGROUND)
         .x_axis(
             Axis::default()
                 .bounds([0.0, x_max])
                 .labels(x_labels)
-                .title(Line::from("s")),    // ox
+                .title(Line::styled("s", *STYLE_GRAPH_LABEL))
+                .style(*STYLE_GRAPH_AXIS),
         )
         .y_axis(
             Axis::default()
                 .bounds([0.0, y_top as f64])
                 .labels(y_labels)
-                .title(Line::from("wpm")),  // oy
+                .title(Line::styled("wpm", *STYLE_GRAPH_LABEL))
+                .style(*STYLE_GRAPH_AXIS),
         )
         .render(area, buf);
 }
