@@ -22,7 +22,6 @@ use crate::{
         Config,
         Language
     },
-    languages::{WordsLanguages, QuotesLanguages},
     response::Response,
     WORDS_DIR,
     QUOTES_DIR,

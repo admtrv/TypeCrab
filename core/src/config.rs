@@ -2,18 +2,11 @@
  * core/src/config.rs
  */
 
-use std::{
-    fs,
-    path::Path
-};
-
 use crate::{
     response::{
         Level,
         Response
     },
-    WORDS_DIR,
-    QUOTES_DIR,
     languages::{WordsLanguages, QuotesLanguages}
 };
 
@@ -61,7 +54,7 @@ impl Default for Config {
     }
 }
 
-// api function, that returns modified config if something wrong with initial
+// API function that returns modified config if something is wrong with the initial config
 pub fn validate_config(mut config: Config) -> ConfigResponse {
     let mut messages: Vec<String> = Vec::new();
     let mut level = Level::Info;
@@ -69,7 +62,7 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
     // word_count / time_limit validation
     if config.word_count == 0 {
         config.word_count = 30;
-        messages.push("invalid word count, set to 25".to_string());
+        messages.push("invalid word count, set to 30".to_string());
         level.escalate(Level::Warning);
     }
 
@@ -80,15 +73,9 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
     }
 
     // custom file validation
-    if let Some(ref path_str) = config.file {
+    if let Some(_) = config.file {
         if matches!(config.mode, GameMode::Zen) {
             messages.push("provided custom file, but chosen zen mode".to_string());
-            level.escalate(Level::Error);
-        }
-
-        let path = Path::new(path_str);
-        if !path.exists() {
-            messages.push(format!("file '{}' doesn't exist", path.display()));
             level.escalate(Level::Error);
         }
     }
@@ -96,14 +83,7 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
     // mode-specific validation
     match config.mode {
         GameMode::Words => {
-            if let Language::Words(lang) = config.language {
-                let path = Path::new(WORDS_DIR).join(lang.file_path().strip_prefix("/assets/words/").unwrap_or(lang.file_path()));
-                if !path.exists() {
-                    messages.push(format!("no words found for '{}', fallback to 'en'", lang.as_str()));
-                    config.language = Language::Words(WordsLanguages::En);
-                    level.escalate(Level::Warning);
-                }
-            } else {
+            if !matches!(config.language, Language::Words(_)) {
                 messages.push("invalid language for words mode, fallback to 'en'".to_string());
                 config.language = Language::Words(WordsLanguages::En);
                 level.escalate(Level::Warning);
@@ -111,40 +91,27 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
         }
 
         GameMode::Quote => {
-            if let Language::Quotes(lang) = config.language {
-                let dir = Path::new(QUOTES_DIR).join(lang.dir_path().strip_prefix("/assets/quotes/").unwrap_or(lang.dir_path()));
-                let has_any = dir.is_dir()
-                    && fs::read_dir(&dir)
-                        .map(|mut iter| iter.next().is_some())
-                        .unwrap_or(false);
-
-                if !has_any {
-                    messages.push(format!("no quotes found for '{}', fallback to 'words' mode", lang.as_str()));
-                    config.mode = GameMode::Words;
-                    config.language = Language::Words(WordsLanguages::En);
-                    level.escalate(Level::Warning);
-                } else {
-                    if config.word_count != 25 {
-                        config.word_count = 25;
-                        messages.push("quote mode ignores word count".to_string());
-                        level.escalate(Level::Warning);
-                    }
-                    if config.punctuation {
-                        config.punctuation = false;
-                        messages.push("quote mode ignores punctuation".to_string());
-                        level.escalate(Level::Warning);
-                    }
-                    if config.numbers {
-                        config.numbers = false;
-                        messages.push("quote mode ignores numbers".to_string());
-                        level.escalate(Level::Warning);
-                    }
-                }
-            } else {
+            if !matches!(config.language, Language::Quotes(_)) {
                 messages.push("invalid language for quote mode, fallback to 'words' mode".to_string());
                 config.mode = GameMode::Words;
                 config.language = Language::Words(WordsLanguages::En);
                 level.escalate(Level::Warning);
+            } else {
+                if config.word_count != 25 {
+                    config.word_count = 25;
+                    messages.push("quote mode ignores word count".to_string());
+                    level.escalate(Level::Warning);
+                }
+                if config.punctuation {
+                    config.punctuation = false;
+                    messages.push("quote mode ignores punctuation".to_string());
+                    level.escalate(Level::Warning);
+                }
+                if config.numbers {
+                    config.numbers = false;
+                    messages.push("quote mode ignores numbers".to_string());
+                    level.escalate(Level::Warning);
+                }
             }
         }
 

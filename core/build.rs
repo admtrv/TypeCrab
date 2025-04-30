@@ -1,6 +1,6 @@
 use std::fs::{self, File};
 use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 
 // Define constants for directory paths
 const QUOTES_DIR: &str = "../resources/quotes";
