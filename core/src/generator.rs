@@ -37,54 +37,103 @@ const NUMBER_PROBABILITY: f64 = 0.2;
 pub type GeneratorResponse = Response<Vec<String>>;
 
 // api function, that generates test content according to config
-pub fn generate_content(config: &Config) -> GeneratorResponse {
+macro_rules! generate_content {
+    ($($maybe_async:tt)?) => {
+        pub $($maybe_async)? fn generate_content(config: &Config) -> GeneratorResponse {
+            // if user specified file, read from it directly
+            if let Some(user_file) = &config.file {
+                let lines = match load_file(user_file) {
+                    Ok(lines) => lines,
+                    Err(e) => {
+                        return GeneratorResponse::with_error(
+                            Vec::new(),
+                            format!("invalid file '{}', {}", user_file, e),
+                        );
+                    }
+                };
 
-    // if user specified file, read from it directly
-    if let Some(user_file) = &config.file {
-        let lines = match load_file(user_file) {
-            Ok(lines) => lines,
-            Err(e) => { return GeneratorResponse::with_error(Vec::new(), format!("invalid file '{}', {}", user_file, e), ); }
-        };
+                return match config.mode {
+                    GameMode::Words => GeneratorResponse::plain(finalize_lines(lines, config)),
+                    GameMode::Quote => GeneratorResponse::plain(split_lines(lines)),
+                    GameMode::Zen => GeneratorResponse::with_error(
+                        Vec::new(),
+                        "zen mode should not receive a file".to_string(),
+                    ),
+                };
+            }
 
-        return match config.mode {
-            GameMode::Words => GeneratorResponse::plain(finalize_lines(lines, config)),
-            GameMode::Quote => GeneratorResponse::plain(split_lines(lines)),
-            GameMode::Zen => GeneratorResponse::with_error(Vec::new(), "zen mode should not receive a file".to_string())
-        };
-    }
+            match config.mode {
+                GameMode::Words => {
+                    if let Language::Words(lang) = config.language {
+                        #[cfg(target_arch = "wasm32")]
+                        let lines = match load_words(lang.as_str()).await {
+                            Ok(lines) => lines,
+                            Err(e) => return GeneratorResponse::with_error(Vec::new(), e),
+                        };
 
-    // else integrated resources
-    match config.mode {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        let lines = match load_words(lang.as_str()) {
+                            Ok(lines) => lines,
+                            Err(e) => return GeneratorResponse::with_error(Vec::new(), e),
+                        };
 
-        // words mode
-        GameMode::Words => {
-            if let Language::Words(lang) = config.language {
-                match load_words(lang.as_str()) {
-                    Ok(lines) => GeneratorResponse::plain(finalize_lines(lines, config)),
-                    Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+                        GeneratorResponse::plain(finalize_lines(lines, config))
+                    } else {
+                        GeneratorResponse::with_error(
+                            Vec::new(),
+                            "invalid language for words mode".to_string(),
+                        )
+                    }
                 }
-            } else {
-                GeneratorResponse::with_error(Vec::new(), "invalid language for words mode".to_string())
+
+                GameMode::Quote => {
+                    if let Language::Quotes(lang) = config.language {
+                        match load_quote(lang.as_str()) {
+                            Ok(lines) => GeneratorResponse::plain(split_lines(lines)),
+                            Err(e) => GeneratorResponse::with_error(Vec::new(), e),
+                        }
+                    } else {
+                        GeneratorResponse::with_error(
+                            Vec::new(),
+                            "invalid language for quote mode".to_string(),
+                        )
+                    }
+                }
+
+                GameMode::Zen => {
+                    GeneratorResponse::with_info(Vec::new(), "zen mode doesn't require words")
+                }
             }
         }
-
-        // quote mode
-        GameMode::Quote => {
-            if let Language::Quotes(lang) = config.language {
-                match load_quote(lang.as_str()) {
-                    Ok(lines) => GeneratorResponse::plain(split_lines(lines)),
-                    Err(e) => GeneratorResponse::with_error(Vec::new(), e),
-                }
-            } else {
-                GeneratorResponse::with_error(Vec::new(), "invalid language for quote mode".to_string())
-            }
-        }
-
-        // zen mode
-        GameMode::Zen => GeneratorResponse::with_info(Vec::new(), "zen mode doesn't require words"),
-    }
+    };
 }
 
+// Usage:
+#[cfg(target_arch = "wasm32")]
+generate_content!(async);
+
+#[cfg(not(target_arch = "wasm32"))]
+generate_content!();
+
+
+#[cfg(target_arch = "wasm32")]
+fn base_url() -> String {
+    web_sys::window().unwrap().location().origin().unwrap()
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn load_words(lang: &str) -> Result<Vec<String>, String> {
+    let url = format!("{}/assets/words/{}.txt", base_url(), lang);
+    let text = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("failed to fetch words: {}", e))?
+        .text()
+        .await
+        .map_err(|e| format!("failed to read response: {}", e))?;
+    Ok(text.lines().map(|s| s.to_string()).collect())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn load_words(lang: &str) -> Result<Vec<String>, String> {
     let path = Path::new(WORDS_DIR).join(format!("{}.txt", lang));
     load_file(&path).map_err(|e| format!("cannot read words '{}', {}", path.display(), e))

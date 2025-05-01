@@ -25,7 +25,7 @@ pub enum Language {
     Quotes(QuotesLanguages)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub mode: GameMode,
     pub language: Language,

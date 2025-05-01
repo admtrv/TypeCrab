@@ -6,6 +6,8 @@ edition = "2021"
 
 [dependencies]
 dioxus = { version = "0.6.0", features = ["router"] }
+typingcore = { package="core", path = "../core" }
+getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [features]
 default = ["web"]

@@ -3,8 +3,20 @@
 use dioxus::prelude::*;
 use components::*;
 use pages::*;
-
 /// Define a components module that contains all shared components for our app.
+use typingcore::{
+    Config,
+    GameMode,
+    Level,
+    RawResults,
+    process_results,
+    language_from_str,
+    SCHEMES_DIR,
+    generate_content,
+    list_languages,
+    list_schemes,
+    validate_config,
+};
 mod components;
 mod pages;
 
@@ -33,14 +45,25 @@ enum Route {
 }
 #[component]
 fn App() -> Element {
-    // The `rsx!` macro lets us define HTML inside of rust. It expands to an Element with all of our HTML inside.
+    let config = use_signal(|| Config::default());
+    
+    let words = use_resource(move || async move {
+        let generation_response = generate_content(&config.read()).await;
+
+        if let Some((Level::Error, msg)) = &generation_response.message {
+            std::process::exit(1);
+        }
+
+        generation_response.payload
+    });
+
+
     rsx! {
-        // In addition to element and text (which we will see later), rsx can contain other components. In this case,
-        // we are using the `document::Link` component to add a link to our favicon and main CSS file into the head of our app.
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
         Header {}
-        Router::<Route> {} 
+        Router::<Route> {}
+        {words.read().as_ref().map(|vec| vec.join(" ")).unwrap_or_default()}
         Footer {}
     }
 }

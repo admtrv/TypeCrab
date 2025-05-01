@@ -9,3 +9,7 @@ edition = "2021"
 crate-type = ["rlib"]
 [dependencies]
 rand = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+web-sys = { version = "0.3.77", features = ["Window", "Location"] }
