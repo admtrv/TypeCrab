@@ -118,6 +118,10 @@ pub fn Settings() -> Element {
                     name: "death",
                     r#type: "checkbox",
                 } 
+                input {
+                    r#type: "submit",
+                    value: "Save config",
+                }
             }
         }
     } 
