@@ -62,6 +62,21 @@ pub fn Settings() -> Element {
                         }
                     }
                 }
+                label { "Word count" }
+                input {
+                    r#type: "number",
+                    min: "1",
+                    onchange: move |event| {
+                        match event.value().parse::<usize>() {
+                            Ok(num) => {
+                            let mut new_config = (*config.read()).clone();
+                            new_config.word_count= num;
+                            config.set(new_config);
+                            }
+                            Err(_) => todo!()
+                        };
+                    }
+                }
             }
         }
     } 
