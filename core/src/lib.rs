@@ -20,6 +20,7 @@ pub use response::{
 pub use config::{
     GameMode,
     Config,
+    Language,
     validate_config
 };
 pub use generator::generate_content;
@@ -35,6 +36,8 @@ pub use results::{
     process_results
 };
 pub use languages::{
-    language_from_str
+    language_from_str,
+    QuotesLanguages,
+    WordsLanguages,
 };
 
