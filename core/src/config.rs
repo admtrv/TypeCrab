@@ -12,7 +12,7 @@ use crate::{
 
 pub type ConfigResponse = Response<Config>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameMode {
     Words,
     Quote,
