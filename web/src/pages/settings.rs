@@ -64,6 +64,7 @@ pub fn Settings() -> Element {
                 }
                 label { "Word count" }
                 input {
+                    name: "word-count",
                     r#type: "number",
                     min: "1",
                     onchange: move |event| {
@@ -71,6 +72,22 @@ pub fn Settings() -> Element {
                             Ok(num) => {
                             let mut new_config = (*config.read()).clone();
                             new_config.word_count= num;
+                            config.set(new_config);
+                            }
+                            Err(_) => todo!()
+                        };
+                    }
+                }
+                label { "Time limit (Optional)" }
+                input {
+                    name: "time-limit",
+                    r#type: "number",
+                    min: "0",
+                    onchange: move |event| {
+                        match event.value().parse::<u32>() {
+                            Ok(num) => {
+                            let mut new_config = (*config.read()).clone();
+                            new_config.time_limit = Some(num);
                             config.set(new_config);
                             }
                             Err(_) => todo!()
