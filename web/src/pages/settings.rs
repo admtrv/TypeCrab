@@ -67,6 +67,7 @@ pub fn Settings() -> Element {
                     name: "word-count",
                     r#type: "number",
                     min: "1",
+                    value: "{config.read().word_count}",
                     onchange: move |event| {
                         match event.value().parse::<usize>() {
                             Ok(num) => {
@@ -83,6 +84,7 @@ pub fn Settings() -> Element {
                     name: "time-limit",
                     r#type: "number",
                     min: "0",
+                    value: "{config.read().time_limit.unwrap_or(0)}",
                     onchange: move |event| {
                         match event.value().parse::<u32>() {
                             Ok(num) => {
@@ -100,11 +102,13 @@ pub fn Settings() -> Element {
                     input {
                         name: "punctuation",
                         r#type: "checkbox",
+                        checked:"{config.read().punctuation}"
                     },
                     label {"Numbers"}
                     input {
                         name: "numbers",
                         r#type: "checkbox",
+                        checked:"{config.read().numbers}"
                     } 
                 }
 
@@ -112,11 +116,13 @@ pub fn Settings() -> Element {
                 input {
                     name: "backtrack",
                     r#type: "checkbox",
+                    checked:"{config.read().backtrack}"
                 } 
                 label {"Death"}
                 input {
                     name: "death",
                     r#type: "checkbox",
+                    checked:"{config.read().death}"
                 } 
                 input {
                     r#type: "submit",
