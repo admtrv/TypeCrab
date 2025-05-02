@@ -94,6 +94,30 @@ pub fn Settings() -> Element {
                         };
                     }
                 }
+            
+                if config.read().mode == GameMode::Words {
+                    label {"Punctuation"}
+                    input {
+                        name: "punctuation",
+                        r#type: "checkbox",
+                    },
+                    label {"Numbers"}
+                    input {
+                        name: "numbers",
+                        r#type: "checkbox",
+                    } 
+                }
+
+                label {"Backtrack"}
+                input {
+                    name: "backtrack",
+                    r#type: "checkbox",
+                } 
+                label {"Death"}
+                input {
+                    name: "death",
+                    r#type: "checkbox",
+                } 
             }
         }
     } 
