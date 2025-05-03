@@ -79,9 +79,10 @@ fn generate_languages_file() -> io::Result<()> {
     let mut content = String::new();
     content.push_str("use crate::config::{GameMode, Language};\n\n");
 
+    content.push_str("use serde::Serialize;\n\n");
     // WordsLanguages enum
     content.push_str("/// Auto-generated enum for words languages\n");
-    content.push_str("#[derive(Debug, Clone, Copy, PartialEq)]\npub enum WordsLanguages {\n");
+    content.push_str("#[derive(Debug, Clone, Copy, PartialEq, Serialize)]\npub enum WordsLanguages {\n");
     for (variant_name, _) in &words_variants {
         content.push_str(&format!("    {},\n", variant_name));
     }
@@ -116,7 +117,7 @@ fn generate_languages_file() -> io::Result<()> {
 
     // QuotesLanguages enum
     content.push_str("/// Auto-generated enum for quotes languages\n");
-    content.push_str("#[derive(Debug, Clone, Copy, PartialEq)]\npub enum QuotesLanguages {\n");
+    content.push_str("#[derive(Debug, Clone, Copy, PartialEq, Serialize)]\npub enum QuotesLanguages {\n");
     for (variant_name, _) in &quotes_variants {
         content.push_str(&format!("    {},\n", variant_name));
     }

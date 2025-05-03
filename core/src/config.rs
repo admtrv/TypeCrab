@@ -10,22 +10,24 @@ use crate::{
     languages::{WordsLanguages, QuotesLanguages}
 };
 
+use serde::Serialize;
+
 pub type ConfigResponse = Response<Config>;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 pub enum GameMode {
     Words,
     Quote,
     Zen,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum Language {
     Words(WordsLanguages),
     Quotes(QuotesLanguages)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Config {
     pub mode: GameMode,
     pub language: Language,
@@ -51,6 +53,12 @@ impl Default for Config {
             backtrack: true,
             death: false,
         }
+    }
+}
+
+impl Config {
+    pub fn to_json_string(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(&self)
     }
 }
 
