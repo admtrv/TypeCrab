@@ -1,6 +1,8 @@
 // The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
 // need dioxus
 use dioxus::prelude::*;
+use dioxus_toast::{ToastFrame, ToastInfo, ToastManager};
+
 use components::*;
 use pages::*;
 /// Define a components module that contains all shared components for our app.
@@ -45,6 +47,8 @@ enum Route {
 }
 #[component]
 fn App() -> Element {
+    let toast = use_context_provider(|| Signal::new(ToastManager::default()));
+
     let config = use_signal(|| Config::default());
     
     let words = use_resource(move || async move {
@@ -61,6 +65,7 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
+        ToastFrame { manager: toast }
         Header {}
         Router::<Route> {}
         Footer {}

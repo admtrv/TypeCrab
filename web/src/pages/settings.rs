@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_toast::{ToastInfo, ToastManager};
 use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages};
 use web_sys::{console, window, Storage};
 use serde::{Serialize, Deserialize};
@@ -34,6 +35,8 @@ const SETTINGS_CSS: Asset = asset!("/assets/styling/settings.css");
 
 #[component]
 pub fn Settings() -> Element { 
+
+    let mut toast: Signal<ToastManager> = use_context();
 
     let mut current_config = use_signal(|| {
         if let Some(window) = window() {
@@ -124,6 +127,7 @@ pub fn Settings() -> Element {
                                     if let Some(window) = window() {
                                         if let Ok(Some(storage)) = window.local_storage() {
                                             if let Err(e) = storage.set_item("current_config", &json) {
+                                                toast.write().popup(ToastInfo::error(format!("Failed to save to localStorage: {:?}",e).as_str(), "Error"));
                                                 console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
                                             }
                                         }
@@ -136,6 +140,7 @@ pub fn Settings() -> Element {
                                 if let Some(window) = window() {
                                     if let Ok(Some(storage)) = window.local_storage() {
                                         if let Err(e) = storage.set_item("configs", &json) {
+                                            toast.write().popup(ToastInfo::error(format!("Failed to save to localStorage: {:?}",e).as_str(), "Error"));
                                             console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
                                         }
                                     }
@@ -198,8 +203,10 @@ pub fn Settings() -> Element {
                         if let Some(window) = window() {
                             if let Ok(Some(storage)) = window.local_storage() {
                                 if let Err(e) = storage.set_item("current_config", &json) {
+                                    toast.write().popup(ToastInfo::error(format!("Failed to save to localStorage: {:?}",e).as_str(), "Error"));
                                     console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
                                 } else {
+                                    toast.write().popup(ToastInfo::success("Config saved!", "Success"));
                                     console::log_1(&"Saved to localStorage".into());
                                 }
                             }
@@ -211,7 +218,6 @@ pub fn Settings() -> Element {
                     let mut new_configs = (*configs.read()).clone(); // Clone the configs to modify
                     for config in new_configs.iter_mut() { // Use iter_mut for mutable references
                         if config.id == current_config.read().id {
-                            console::log_1(&"Modifying".into());
                             *config = current_config.read().clone(); // Update the matching config
                         }
                     }
@@ -230,6 +236,7 @@ pub fn Settings() -> Element {
                         }
                     } else {
                         console::log_1(&"Failed to serialize config".into());
+                        toast.write().popup(ToastInfo::success("Configs saved!", "Success"));
                     }
                 },
                 label { "Config name",
