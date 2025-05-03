@@ -1,23 +1,65 @@
 use dioxus::prelude::*;
 use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages};
 use web_sys::{console, window, Storage};
+use serde::{Serialize, Deserialize};
+use uuid::Uuid;
+
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
+struct StoredConfig {
+    id: String,
+    name: String,
+    config: Config,
+}
+
+impl StoredConfig {
+    pub fn to_json_string(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(&self)
+    }
+
+    pub fn from_json_string(json: &str) -> Result<Self, serde_json::Error> {
+        serde_json::from_str(json)
+    }
+}
+impl Default for StoredConfig {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4().to_string(),
+            name: "Default Config".to_string(),
+            config: Config::default()
+        }
+    }
+}
 
 #[component]
 pub fn Settings() -> Element { 
+
     let mut current_config = use_signal(|| {
         if let Some(window) = window() {
             if let Ok(Some(storage)) = window.local_storage() {
-                if let Ok(Some(json)) = storage.get_item("config") {
-                    if let Ok(parsed_config) = Config::from_json_string(&json) {
+                if let Ok(Some(json)) = storage.get_item("current_config") {
+                    if let Ok(parsed_config) = StoredConfig::from_json_string(&json) {
                         return parsed_config;
                     }
                 }
             }
         }
-        Config::default()
+        StoredConfig::default()
+    });
+    let mut configs = use_signal(|| {
+        if let Some(window) = window() {
+            if let Ok(Some(storage)) = window.local_storage() {
+                if let Ok(Some(json)) = storage.get_item("configs") {
+                    if let Ok(parsed_configs) = serde_json::from_str::<Vec<StoredConfig>>(&json) {
+                        return parsed_configs;
+                    }
+                }
+            }
+        }
+        vec![current_config.read().clone()]
     });
 
-    let language_options = match current_config.read().mode {
+
+    let language_options = match current_config.read().config.mode {
         GameMode::Words => WordsLanguages::all()
             .iter()
             .map(|lang| lang.as_str().to_string())
@@ -28,17 +70,43 @@ pub fn Settings() -> Element {
             .collect::<Vec<_>>(),
         GameMode::Zen => vec!["en".to_string()], // No language options for Zen
     };
-    let current_language = match current_config.read().language {
+    let current_language = match current_config.read().config.language {
         Language::Words(lang) => lang.as_str(),
         Language::Quotes(lang) => lang.as_str(),
     };
     rsx! {
         main {
+            div {
+                select {
+                    for config in configs.read().clone() {
+                            option {
+                                value: "{config.id}",
+                                selected: config.id == *current_config.read().id,
+                                "{config.name}"
+                            }
+                    }     
+                }
+                button {
+                    onclick: move |_| {
+                        if current_config.read().config != Config::default() {
+                            let mut new_configs = (*configs.read()).clone();
+                            let config = StoredConfig::default();
+                            new_configs.push(config.clone());
+                            configs.set(new_configs.clone());
+                            current_config.set(config);
+                        } 
+                    },
+                    "Create new config" 
+                }
+            }
             form {
                 onsubmit: move |event| {
                     let mut new_config = (*current_config.read()).clone();
+                    if let Some(name) = event.data.values().get("name") {
+                        new_config.name = name.0[0].to_string();
+                    }
                     if let Some(mode) = event.data.values().get("mode") {
-                        new_config.mode = match mode.0[0].as_str() {
+                        new_config.config.mode = match mode.0[0].as_str() {
                             "words" => GameMode::Words,
                             "quote" => GameMode::Quote,
                             "zen" => GameMode::Zen,
@@ -47,41 +115,65 @@ pub fn Settings() -> Element {
                     }
 
                     // Parse language (if not Zen mode)
-                    if new_config.mode != GameMode::Zen {
+                    if new_config.config.mode != GameMode::Zen {
                         if let Some(lang) = event.data.values().get("language") {
-                            new_config.language = language_from_str(&lang.0[0], new_config.mode);
+                            new_config.config.language = language_from_str(&lang.0[0], new_config.config.mode);
                         }
                     }
 
                     // Parse word count
                     if let Some(word_count) = event.data.values().get("word-count") {
                         if let Ok(num) = word_count.0[0].parse::<usize>() {
-                            new_config.word_count = num;
+                            new_config.config.word_count = num;
                         }
                     }
 
                     // Parse time limit
                     if let Some(time_limit) = event.data.values().get("time-limit") {
                         if let Ok(num) = time_limit.0[0].parse::<u32>() {
-                            new_config.time_limit = Some(num);
+                            new_config.config.time_limit = Some(num);
                         }
                     }
 
                     // Parse checkboxes
-                    if new_config.mode == GameMode::Words {
-                        new_config.punctuation = event.data.values().get("punctuation").map(|v| v == "on").unwrap_or(false);
-                        new_config.numbers = event.data.values().get("numbers").map(|v| v == "on").unwrap_or(false);
+                    if new_config.config.mode == GameMode::Words {
+                        new_config.config.punctuation = event.data.values().get("punctuation").map(|v| v == "on").unwrap_or(false);
+                        new_config.config.numbers = event.data.values().get("numbers").map(|v| v == "on").unwrap_or(false);
                     }
 
-                    new_config.backtrack = event.data.values().get("backtrack").map(|v| v == "on").unwrap_or(false);
-                    new_config.death = event.data.values().get("death").map(|v| v == "on").unwrap_or(false);
+                    new_config.config.backtrack = event.data.values().get("backtrack").map(|v| v == "on").unwrap_or(false);
+                    new_config.config.death = event.data.values().get("death").map(|v| v == "on").unwrap_or(false);
 
                     // Update config
                     current_config.set(new_config.clone());
                     if let Ok(json) = new_config.to_json_string() {
                         if let Some(window) = window() {
                             if let Ok(Some(storage)) = window.local_storage() {
-                                if let Err(e) = storage.set_item("config", &json) {
+                                if let Err(e) = storage.set_item("current_config", &json) {
+                                    console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
+                                } else {
+                                    console::log_1(&"Saved to localStorage".into());
+                                }
+                            }
+                        }
+                    } else {
+                        console::log_1(&"Failed to serialize config".into());
+                    }
+
+                    let mut new_configs = (*configs.read()).clone(); // Clone the configs to modify
+                    for config in new_configs.iter_mut() { // Use iter_mut for mutable references
+                        if config.id == current_config.read().id {
+                            console::log_1(&"Modifying".into());
+                            *config = current_config.read().clone(); // Update the matching config
+                        }
+                    }
+                    configs.set(new_configs); // Update the configs with the modified version
+
+                    // Serialize and save to localStorage
+                    if let Ok(json) = serde_json::to_string_pretty(&*configs.read()) {
+                        if let Some(window) = window() {
+                            if let Ok(Some(storage)) = window.local_storage() {
+                                if let Err(e) = storage.set_item("configs", &json) {
                                     console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
                                 } else {
                                     console::log_1(&"Saved to localStorage".into());
@@ -92,6 +184,13 @@ pub fn Settings() -> Element {
                         console::log_1(&"Failed to serialize config".into());
                     }
                 },
+                label { "Config name" }
+                input {
+                    name: "name",
+                    r#type: "text",
+                    placeholder: "Enter config name",
+                    value: "{current_config.read().name}"
+                }
                 label { "Game mode: " }
                 select {
                     name: "mode",
@@ -105,14 +204,14 @@ pub fn Settings() -> Element {
 
 
                         let mut new_config = (*current_config.read()).clone(); 
-                        new_config.mode = new_mode;
+                        new_config.config.mode = new_mode;
                         current_config.set(new_config); 
                     },
-                    option { value: "words", selected: current_config.read().mode == GameMode::Words, "Words" }
-                    option { value: "quote", selected: current_config.read().mode == GameMode::Quote, "Quote" }
-                    option { value: "zen", selected: current_config.read().mode == GameMode::Zen, "Zen" }
+                    option { value: "words", selected: current_config.read().config.mode == GameMode::Words, "Words" }
+                    option { value: "quote", selected: current_config.read().config.mode == GameMode::Quote, "Quote" }
+                    option { value: "zen", selected: current_config.read().config.mode == GameMode::Zen, "Zen" }
                 }
-                if current_config.read().mode != GameMode::Zen {
+                if current_config.read().config.mode != GameMode::Zen {
                     label { "Language: " }
                     select {
                         name: "language",
@@ -130,7 +229,7 @@ pub fn Settings() -> Element {
                     name: "word-count",
                     r#type: "number",
                     min: "1",
-                    value: "{current_config.read().word_count}",
+                    value: "{current_config.read().config.word_count}",
                 
                 }
                 label { "Time limit (Optional)" }
@@ -138,21 +237,21 @@ pub fn Settings() -> Element {
                     name: "time-limit",
                     r#type: "number",
                     min: "0",
-                    value: "{current_config.read().time_limit.unwrap_or(0)}",
+                    value: "{current_config.read().config.time_limit.unwrap_or(0)}",
                 }
             
-                if current_config.read().mode == GameMode::Words {
+                if current_config.read().config.mode == GameMode::Words {
                     label {"Punctuation"}
                     input {
                         name: "punctuation",
                         r#type: "checkbox",
-                        checked:"{current_config.read().punctuation}"
+                        checked:"{current_config.read().config.punctuation}"
                     },
                     label {"Numbers"}
                     input {
                         name: "numbers",
                         r#type: "checkbox",
-                        checked:"{current_config.read().numbers}"
+                        checked:"{current_config.read().config.numbers}"
                     } 
                 }
 
@@ -160,13 +259,13 @@ pub fn Settings() -> Element {
                 input {
                     name: "backtrack",
                     r#type: "checkbox",
-                    checked:"{current_config.read().backtrack}"
+                    checked:"{current_config.read().config.backtrack}"
                 } 
                 label {"Death"}
                 input {
                     name: "death",
                     r#type: "checkbox",
-                    checked:"{current_config.read().death}"
+                    checked:"{current_config.read().config.death}"
                 } 
                 input {
                     r#type: "submit",
