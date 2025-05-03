@@ -32,6 +32,7 @@ label {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+  font-size: 1.25rem;
   color: var(--white-color);
   width: 100%;
 }
@@ -128,11 +129,10 @@ input[type="number"]:focus {
 input[type="checkbox"] {
   margin-right: 10px;
   accent-color: var(--blue-color);
-  transform: scale(1.2);
+  transform: scale(2);
 }
-
 input[type="submit"] {
-  width: fit-content;
+  width: 200px;
   padding: 10px 20px;
   background-color: var(--green-color);
   color: var(--dark-color);
