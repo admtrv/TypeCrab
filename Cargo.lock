@@ -686,6 +686,8 @@ version = "0.2.0"
 dependencies = [
  "rand 0.9.1",
  "reqwest",
+ "serde",
+ "serde_json",
  "web-sys",
 ]
 
@@ -5142,6 +5144,11 @@ name = "uuid"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
+dependencies = [
+ "getrandom 0.3.2",
+ "js-sys",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "vcpkg"
@@ -5314,6 +5321,10 @@ dependencies = [
  "core",
  "dioxus",
  "getrandom 0.3.2",
+ "serde",
+ "serde_json",
+ "uuid",
+ "web-sys",
 ]
 
 [[package]]

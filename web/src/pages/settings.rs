@@ -30,6 +30,8 @@ impl Default for StoredConfig {
     }
 }
 
+const SETTINGS_CSS: Asset = asset!("/assets/styling/settings.css");
+
 #[component]
 pub fn Settings() -> Element { 
 
@@ -75,18 +77,24 @@ pub fn Settings() -> Element {
         Language::Quotes(lang) => lang.as_str(),
     };
     rsx! {
+        document::Link { rel: "stylesheet", href: SETTINGS_CSS}
         main {
             div {
-                select {
-                    for config in configs.read().clone() {
-                            option {
-                                value: "{config.id}",
-                                selected: config.id == *current_config.read().id,
-                                "{config.name}"
+                id: "settings-container",
+                label {
+                    "Selected config",
+                    select {
+                        for config in configs.read().clone() {
+                        option {
+                            value: "{config.id}",
+                                    selected: config.id == *current_config.read().id,
+                                    "{config.name}"
                             }
-                    }     
+                        }     
+                    }
                 }
                 button {
+                    id: "create",
                     onclick: move |_| {
                         if current_config.read().config != Config::default() {
                             let mut new_configs = (*configs.read()).clone();
@@ -96,9 +104,10 @@ pub fn Settings() -> Element {
                             current_config.set(config);
                         } 
                     },
-                    "Create new config" 
+                    "Create config" 
                 }
                 button {
+                    id: "delete",
                     onclick: move |_| {
                         let mut new_configs = (*configs.read()).clone();
                         // Prevent deleting if only one config remains
@@ -135,7 +144,7 @@ pub fn Settings() -> Element {
                         }
                     },
                     disabled: configs.read().len() <= 1,
-                    "Delete config"
+                    "Delete"
                 }
             }
             form {
@@ -223,89 +232,99 @@ pub fn Settings() -> Element {
                         console::log_1(&"Failed to serialize config".into());
                     }
                 },
-                label { "Config name" }
-                input {
-                    name: "name",
-                    r#type: "text",
-                    placeholder: "Enter config name",
-                    value: "{current_config.read().name}"
+                label { "Config name",
+                    input {
+                        name: "name",
+                        r#type: "text",
+                        placeholder: "Enter config name",
+                        value: "{current_config.read().name}"
+                    }
                 }
-                label { "Game mode: " }
-                select {
-                    name: "mode",
-                    onchange: move |event| {
-                        let new_mode = match event.value().as_str() {
-                            "words" => GameMode::Words,
-                            "quote" => GameMode::Quote,
-                            "zen" => GameMode::Zen,
-                            _ => GameMode::Words, // fallback in case of unexpected value
-                        };
+                label { "Game mode",
+                        select {
+                            name: "mode",
+                            onchange: move |event| {
+                                let new_mode = match event.value().as_str() {
+                                    "words" => GameMode::Words,
+                                    "quote" => GameMode::Quote,
+                                    "zen" => GameMode::Zen,
+                                    _ => GameMode::Words, // fallback in case of unexpected value
+                                };
 
 
-                        let mut new_config = (*current_config.read()).clone(); 
-                        new_config.config.mode = new_mode;
-                        current_config.set(new_config); 
-                    },
-                    option { value: "words", selected: current_config.read().config.mode == GameMode::Words, "Words" }
-                    option { value: "quote", selected: current_config.read().config.mode == GameMode::Quote, "Quote" }
-                    option { value: "zen", selected: current_config.read().config.mode == GameMode::Zen, "Zen" }
+                                let mut new_config = (*current_config.read()).clone(); 
+                                new_config.config.mode = new_mode;
+                                current_config.set(new_config); 
+                            },
+                            option { value: "words", selected: current_config.read().config.mode == GameMode::Words, "Words" }
+                        option { value: "quote", selected: current_config.read().config.mode == GameMode::Quote, "Quote" }
+                        option { value: "zen", selected: current_config.read().config.mode == GameMode::Zen, "Zen" }
+                    }
                 }
                 if current_config.read().config.mode != GameMode::Zen {
-                    label { "Language: " }
-                    select {
+                    label { "Language",
+                        select {
                         name: "language",
-                        for lang in language_options {
-                            option {
-                                value: "{lang}",
-                                selected: lang == current_language,
-                                "{lang}"
+                                    for lang in language_options {
+                                    option {
+                                    value: "{lang}",
+                                    selected: lang == current_language,
+                                    "{lang}"
+                                }
                             }
                         }
                     }
                 }
-                label { "Word count" }
-                input {
-                    name: "word-count",
-                    r#type: "number",
-                    min: "1",
-                    value: "{current_config.read().config.word_count}",
-                
-                }
-                label { "Time limit (Optional)" }
-                input {
-                    name: "time-limit",
-                    r#type: "number",
-                    min: "0",
-                    value: "{current_config.read().config.time_limit.unwrap_or(0)}",
-                }
-            
-                if current_config.read().config.mode == GameMode::Words {
-                    label {"Punctuation"}
+                label { "Word count", 
                     input {
+                        name: "word-count",
+                        r#type: "number",
+                        min: "1",
+                        value: "{current_config.read().config.word_count}",
+
+                    }
+                }
+                label { "Time limit (Optional)",
+                    input {
+                        name: "time-limit",
+                        r#type: "number",
+                        min: "0",
+                        value: "{current_config.read().config.time_limit.unwrap_or(0)}",
+                    }
+                }
+
+                if current_config.read().config.mode == GameMode::Words {
+                    label {"Punctuation", 
+                        input {
                         name: "punctuation",
                         r#type: "checkbox",
                         checked:"{current_config.read().config.punctuation}"
-                    },
-                    label {"Numbers"}
+                        }
+                    }
+                    label {"Numbers", 
+                        input {
+                            name: "numbers",
+                            r#type: "checkbox",
+                            checked:"{current_config.read().config.numbers}"
+                        } 
+                    }
+                }
+
+                label {"Backtrack", 
                     input {
-                        name: "numbers",
+                        name: "backtrack",
                         r#type: "checkbox",
-                        checked:"{current_config.read().config.numbers}"
+                        checked:"{current_config.read().config.backtrack}"
                     } 
                 }
 
-                label {"Backtrack"}
-                input {
-                    name: "backtrack",
-                    r#type: "checkbox",
-                    checked:"{current_config.read().config.backtrack}"
-                } 
-                label {"Death"}
-                input {
-                    name: "death",
-                    r#type: "checkbox",
-                    checked:"{current_config.read().config.death}"
-                } 
+                label {"Death" ,
+                    input {
+                        name: "death",
+                        r#type: "checkbox",
+                        checked:"{current_config.read().config.death}"
+                    } 
+                }
                 input {
                     r#type: "submit",
                     value: "Save config",

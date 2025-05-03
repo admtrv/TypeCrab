@@ -63,7 +63,6 @@ fn App() -> Element {
 
         Header {}
         Router::<Route> {}
-        {words.read().as_ref().map(|vec| vec.join(" ")).unwrap_or_default()}
         Footer {}
     }
 }
