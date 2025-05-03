@@ -4,7 +4,7 @@ use web_sys::{console, window, Storage};
 
 #[component]
 pub fn Settings() -> Element { 
-    let mut config = use_signal(|| {
+    let mut current_config = use_signal(|| {
         if let Some(window) = window() {
             if let Ok(Some(storage)) = window.local_storage() {
                 if let Ok(Some(json)) = storage.get_item("config") {
@@ -17,7 +17,7 @@ pub fn Settings() -> Element {
         Config::default()
     });
 
-    let language_options = match config.read().mode {
+    let language_options = match current_config.read().mode {
         GameMode::Words => WordsLanguages::all()
             .iter()
             .map(|lang| lang.as_str().to_string())
@@ -28,7 +28,7 @@ pub fn Settings() -> Element {
             .collect::<Vec<_>>(),
         GameMode::Zen => vec!["en".to_string()], // No language options for Zen
     };
-    let current_language = match config.read().language {
+    let current_language = match current_config.read().language {
         Language::Words(lang) => lang.as_str(),
         Language::Quotes(lang) => lang.as_str(),
     };
@@ -36,7 +36,7 @@ pub fn Settings() -> Element {
         main {
             form {
                 onsubmit: move |event| {
-                    let mut new_config = (*config.read()).clone();
+                    let mut new_config = (*current_config.read()).clone();
                     if let Some(mode) = event.data.values().get("mode") {
                         new_config.mode = match mode.0[0].as_str() {
                             "words" => GameMode::Words,
@@ -77,7 +77,7 @@ pub fn Settings() -> Element {
                     new_config.death = event.data.values().get("death").map(|v| v == "on").unwrap_or(false);
 
                     // Update config
-                    config.set(new_config.clone());
+                    current_config.set(new_config.clone());
                     if let Ok(json) = new_config.to_json_string() {
                         if let Some(window) = window() {
                             if let Ok(Some(storage)) = window.local_storage() {
@@ -104,24 +104,18 @@ pub fn Settings() -> Element {
                         };
 
 
-                        let mut new_config = (*config.read()).clone(); // ✅ dereference before clone
+                        let mut new_config = (*current_config.read()).clone(); 
                         new_config.mode = new_mode;
-                        config.set(new_config); // ✅ update signal
+                        current_config.set(new_config); 
                     },
-                    option { value: "words", selected: config.read().mode == GameMode::Words, "Words" }
-                    option { value: "quote", selected: config.read().mode == GameMode::Quote, "Quote" }
-                    option { value: "zen", selected: config.read().mode == GameMode::Zen, "Zen" }
+                    option { value: "words", selected: current_config.read().mode == GameMode::Words, "Words" }
+                    option { value: "quote", selected: current_config.read().mode == GameMode::Quote, "Quote" }
+                    option { value: "zen", selected: current_config.read().mode == GameMode::Zen, "Zen" }
                 }
-                if config.read().mode != GameMode::Zen {
+                if current_config.read().mode != GameMode::Zen {
                     label { "Language: " }
                     select {
                         name: "language",
-                        onchange: move |event| {
-                            let new_language = language_from_str(&event.value(), config.read().mode);
-                            let mut new_config = (*config.read()).clone();
-                            new_config.language = new_language;
-                            config.set(new_config);
-                        },
                         for lang in language_options {
                             option {
                                 value: "{lang}",
@@ -136,48 +130,29 @@ pub fn Settings() -> Element {
                     name: "word-count",
                     r#type: "number",
                     min: "1",
-                    value: "{config.read().word_count}",
-                    onchange: move |event| {
-                        match event.value().parse::<usize>() {
-                            Ok(num) => {
-                            let mut new_config = (*config.read()).clone();
-                            new_config.word_count= num;
-                            config.set(new_config);
-                            }
-                            Err(_) => todo!()
-                        };
-                    }
+                    value: "{current_config.read().word_count}",
+                
                 }
                 label { "Time limit (Optional)" }
                 input {
                     name: "time-limit",
                     r#type: "number",
                     min: "0",
-                    value: "{config.read().time_limit.unwrap_or(0)}",
-                    onchange: move |event| {
-                        match event.value().parse::<u32>() {
-                            Ok(num) => {
-                            let mut new_config = (*config.read()).clone();
-                            new_config.time_limit = Some(num);
-                            config.set(new_config);
-                            }
-                            Err(_) => todo!()
-                        };
-                    }
+                    value: "{current_config.read().time_limit.unwrap_or(0)}",
                 }
             
-                if config.read().mode == GameMode::Words {
+                if current_config.read().mode == GameMode::Words {
                     label {"Punctuation"}
                     input {
                         name: "punctuation",
                         r#type: "checkbox",
-                        checked:"{config.read().punctuation}"
+                        checked:"{current_config.read().punctuation}"
                     },
                     label {"Numbers"}
                     input {
                         name: "numbers",
                         r#type: "checkbox",
-                        checked:"{config.read().numbers}"
+                        checked:"{current_config.read().numbers}"
                     } 
                 }
 
@@ -185,13 +160,13 @@ pub fn Settings() -> Element {
                 input {
                     name: "backtrack",
                     r#type: "checkbox",
-                    checked:"{config.read().backtrack}"
+                    checked:"{current_config.read().backtrack}"
                 } 
                 label {"Death"}
                 input {
                     name: "death",
                     r#type: "checkbox",
-                    checked:"{config.read().death}"
+                    checked:"{current_config.read().death}"
                 } 
                 input {
                     r#type: "submit",
