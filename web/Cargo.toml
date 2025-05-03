@@ -8,6 +8,7 @@ edition = "2021"
 dioxus = { version = "0.6.0", features = ["router"] }
 typingcore = { package="core", path = "../core" }
 getrandom = { version = "0.3", features = ["wasm_js"] }
+web-sys = { version = "0.3.77", features = ["console", "Storage", "Window"] }
 
 [features]
 default = ["web"]
