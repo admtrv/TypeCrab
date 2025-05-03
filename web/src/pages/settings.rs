@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_toast::{ToastInfo, ToastManager};
-use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages};
+use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level};
 use web_sys::{console, window, Storage};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -197,6 +197,13 @@ pub fn Settings() -> Element {
                     new_config.config.backtrack = event.data.values().get("backtrack").map(|v| v == "on").unwrap_or(false);
                     new_config.config.death = event.data.values().get("death").map(|v| v == "on").unwrap_or(false);
 
+                    
+                    let config_response = validate_config(new_config.config);
+
+                    if let Some((Level::Error, msg)) = &config_response.message {
+                        toast.write().popup(ToastInfo::error(msg, "Validation Error"));
+                    }
+                    new_config.config = config_response.payload;
                     // Update config
                     current_config.set(new_config.clone());
                     if let Ok(json) = new_config.to_json_string() {
