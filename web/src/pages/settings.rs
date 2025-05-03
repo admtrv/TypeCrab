@@ -6,10 +6,10 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct StoredConfig {
-    id: String,
-    name: String,
-    config: Config,
+pub struct StoredConfig {
+    pub id: String,
+    pub name: String,
+    pub config: Config,
 }
 
 impl StoredConfig {
