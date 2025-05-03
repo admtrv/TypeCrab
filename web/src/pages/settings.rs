@@ -98,6 +98,45 @@ pub fn Settings() -> Element {
                     },
                     "Create new config" 
                 }
+                button {
+                    onclick: move |_| {
+                        let mut new_configs = (*configs.read()).clone();
+                        // Prevent deleting if only one config remains
+                        if new_configs.len() > 1 {
+                            new_configs.retain(|config| config.id != current_config.read().id);
+                            configs.set(new_configs.clone());
+                            
+                            // Set new current config to first available config
+                            if let Some(new_current) = new_configs.first() {
+                                current_config.set(new_current.clone());
+                                
+                                // Save new current config to localStorage
+                                if let Ok(json) = new_current.to_json_string() {
+                                    if let Some(window) = window() {
+                                        if let Ok(Some(storage)) = window.local_storage() {
+                                            if let Err(e) = storage.set_item("current_config", &json) {
+                                                console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Save updated configs list to localStorage
+                            if let Ok(json) = serde_json::to_string_pretty(&*configs.read()) {
+                                if let Some(window) = window() {
+                                    if let Ok(Some(storage)) = window.local_storage() {
+                                        if let Err(e) = storage.set_item("configs", &json) {
+                                            console::log_1(&format!("Failed to save to localStorage: {:?}", e).into());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    disabled: configs.read().len() <= 1,
+                    "Delete config"
+                }
             }
             form {
                 onsubmit: move |event| {
