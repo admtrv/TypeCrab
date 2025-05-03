@@ -274,14 +274,14 @@ pub fn Settings() -> Element {
                             }
                         }
                     }
-                }
-                label { "Word count", 
-                    input {
-                        name: "word-count",
-                        r#type: "number",
-                        min: "1",
-                        value: "{current_config.read().config.word_count}",
+                    label { "Word count", 
+                        input {
+                            name: "word-count",
+                            r#type: "number",
+                            min: "1",
+                            value: "{current_config.read().config.word_count}",
 
+                        }
                     }
                 }
                 label { "Time limit (Optional)",
