@@ -21,13 +21,13 @@ pub enum GameMode {
     Zen,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Language {
     Words(WordsLanguages),
     Quotes(QuotesLanguages)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Config {
     pub mode: GameMode,
     pub language: Language,
