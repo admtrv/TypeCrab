@@ -27,7 +27,7 @@ use once_cell::sync::Lazy;
 use unicode_width::UnicodeWidthStr;
 use core::Level;
 
-use crate::test::Test;
+use core::Test;
 use crate::tui::scheme::{
     styled_block,
     COLOR_GREEN,

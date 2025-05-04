@@ -3,7 +3,6 @@
  */
 
 mod tui;
-mod test;
 
 use std::{
     io,
@@ -21,6 +20,7 @@ use crossterm::{
     event::{
         Event,
         KeyCode,
+        KeyEvent,
         KeyEventKind,
         KeyModifiers,
     },
@@ -49,13 +49,31 @@ use core::{
     list_languages,
     list_schemes,
     validate_config,
+    Test
 };
 
 use tui::TestView;
 use tui::ResultView;
 use tui::load_scheme_file;
 
-use test::Test;
+
+use core::results::{Key};
+
+fn convert_key(key: &KeyEvent) -> Key {
+    if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
+        return Key::CtrlC;
+    }
+
+    match key.code {
+        KeyCode::Enter => Key::Enter,
+        KeyCode::Backspace => Key::Backspace,
+        KeyCode::Esc => Key::Escape,
+        KeyCode::Char(' ') => Key::Space,
+        KeyCode::Char(c) => Key::Char(c),
+        other => Key::Other(format!("{:?}", other)),
+    }
+}
+
 
 const STYLE_ERROR: &str = "\x1b[1;31merror:\x1b[0m";        // 1;31 = bold red, 0m = reset
 const _STYLE_WARNING: &str = "\x1b[1;33mwarning:\x1b[0m";    // bold yellow
@@ -250,7 +268,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         if event::poll(Duration::from_millis(10))? {
             if let Event::Key(key) = event::read()? {   // processing entered key
-                test.handle_key(key);
+                test.handle_key(convert_key(&key));
 
                 // hot keys
                 if key.kind == KeyEventKind::Press {

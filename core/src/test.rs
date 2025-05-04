@@ -1,16 +1,6 @@
-/*
- * cli/src/test.rs
- */
-
-use crossterm::event::{
-    KeyCode,
-    KeyEvent,
-    KeyEventKind,
-    KeyModifiers
-};
 use std::time::Instant;
 
-use core::{
+use crate::{
     Config,
     results::{
         Key,
@@ -19,6 +9,7 @@ use core::{
         RawResults
     }
 };
+
 
 #[derive(Debug)]
 pub struct Test {
@@ -43,12 +34,7 @@ impl Test {
         }
     }
 
-    pub fn handle_key(&mut self, key: KeyEvent) {
-        if key.kind != KeyEventKind::Press {
-            return;
-        }
-
-        let event_key = convert_key(&key);
+    pub fn handle_key(&mut self, key: Key) {
         let elapsed = self.start_time.elapsed();
 
         if self.words.is_empty() {
@@ -58,12 +44,12 @@ impl Test {
 
         let current = &mut self.words[self.current_word];
 
-        match event_key {
+        match key {
             // end current test
             Key::CtrlC | Key::Escape => {
                 current.events.push(Event {
                     time: elapsed,
-                    key: event_key,
+                    key: key,
                     correct: None,
                 });
                 self.complete = true;
@@ -75,7 +61,7 @@ impl Test {
                     let correct = current.text == current.progress;
                     current.events.push(Event {
                         time: elapsed,
-                        key: event_key,
+                        key: key,
                         correct: None,
                     });
 
@@ -97,7 +83,7 @@ impl Test {
                         // save backspace key press in prev word
                         self.words[self.current_word].events.push(Event {
                             time: elapsed,
-                            key: event_key,
+                            key: key,
                             correct: None
                         });
                     }
@@ -105,7 +91,7 @@ impl Test {
                     current.progress.pop();
                     current.events.push(Event {
                         time: elapsed,
-                        key: event_key,
+                        key: key,
                         correct: None,
                     });
                 }
@@ -118,7 +104,7 @@ impl Test {
                 let partial_correct = current.text.starts_with(&current.progress);
                 current.events.push(Event {
                     time: elapsed,
-                    key: event_key.clone(),
+                    key: key.clone(),
                     correct: Some(partial_correct),
                 });
 
@@ -159,19 +145,3 @@ impl From<&Test> for RawResults {
         RawResults { words, events }
     }
 }
-
-fn convert_key(key: &KeyEvent) -> Key {
-    if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-        return Key::CtrlC;
-    }
-
-    match key.code {
-        KeyCode::Enter => Key::Enter,
-        KeyCode::Backspace => Key::Backspace,
-        KeyCode::Esc => Key::Escape,
-        KeyCode::Char(' ') => Key::Space,
-        KeyCode::Char(c) => Key::Char(c),
-        other => Key::Other(format!("{:?}", other)),
-    }
-}
-

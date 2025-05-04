@@ -7,6 +7,7 @@ mod generator;
 mod response;
 mod listing;
 mod languages;
+mod test;
 pub mod results;
 
 const WORDS_DIR: &str = "resources/words";
@@ -27,6 +28,9 @@ pub use generator::generate_content;
 pub use listing::{
     list_languages,
     list_schemes
+};
+pub use test::{
+    Test
 };
 pub use results::{
     Key,
