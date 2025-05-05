@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="resources/images/logo.png" alt="Logo" width="250">
+  <img src="resources/images/logos/horizontal-white-color.png" alt="Logo" width="300">
 </p>
-
-<h1 align="center">TypeCrab</h1>
 
 # Introduction  
 Our project is a lightweight and customizable typing test, inspired by [MonkeyType](https://monkeytype.com/). It will be implemented in Rust and feature both a command-line interface (CLI) and a web-based UI. Test yourself in various modes, track your progress and improve your speed.
