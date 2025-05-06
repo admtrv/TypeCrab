@@ -81,9 +81,11 @@ impl<'a> Widget for ResultView<'a> {
 }
 
 fn draw_graph(results: &FinalResults, area: Rect, buf: &mut Buffer) {
+    const TITLE: &str = " chart ";
+
     if results.graph_data.is_empty() {
         Chart::default()
-            .block(styled_block("Graph"))
+            .block(styled_block(TITLE))
             .style(*STYLE_GRAPH_BACKGROUND)
             .render(area, buf);
         return;
@@ -146,7 +148,7 @@ fn draw_graph(results: &FinalResults, area: Rect, buf: &mut Buffer) {
         .collect();
 
     Chart::new(datasets)
-        .block(styled_block("Graph"))
+        .block(styled_block(TITLE))
         .style(*STYLE_GRAPH_BACKGROUND)
         .x_axis(
             Axis::default()
@@ -170,11 +172,11 @@ fn draw_info(results: &FinalResults, area: Rect, buf: &mut Buffer) {
 
     // stat: value
     let rows = [
-        ("WPM: ", results.wpm.round().to_string()),
-        ("RAW: ", results.raw_wpm.round().to_string()),
-        ("Accuracy: ", format!("{}%", results.accuracy.round() as u32)),
-        ("Consistency: ", format!("{}%", results.consistency.round() as u32)),
-        ("Characters: ", format!("{}/{}/{}/{}", k.correct, k.incorrect, k.extra, k.missed),),
+        ("wpm ", results.wpm.round().to_string()),
+        ("raw ", results.raw_wpm.round().to_string()),
+        ("accuracy ", format!("{}%", results.accuracy.round() as u32)),
+        ("consistency ", format!("{}%", results.consistency.round() as u32)),
+        ("characters ", format!("{}/{}/{}/{}", k.correct, k.incorrect, k.extra, k.missed),),
     ];
 
     let lines: Vec<Line> = rows
@@ -188,7 +190,7 @@ fn draw_info(results: &FinalResults, area: Rect, buf: &mut Buffer) {
         .collect();
 
     Paragraph::new(lines)
-        .block(styled_block("Info"))
+        .block(styled_block(" stats "))
         .render(area, buf);
 }
 
@@ -257,7 +259,7 @@ fn draw_keyboard(results: &FinalResults, area: Rect, buf: &mut Buffer) {
     }
 
     Paragraph::new(lines)
-        .block(styled_block("Errors"))
+        .block(styled_block(" keystrokes "))
         .render(area, buf);
 }
 

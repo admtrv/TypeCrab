@@ -52,10 +52,12 @@ use core::{
     Test
 };
 
-use tui::TestView;
-use tui::ResultView;
-use tui::load_scheme_file;
-
+use tui::{
+    TestView,
+    ResultView,
+    StartView,
+    load_scheme_file
+};
 
 use core::results::{Key};
 
@@ -82,7 +84,7 @@ const _STYLE_INFO: &str = "\x1b[1;32minfo:\x1b[0m";          // bold green
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "TypeCrab",
+    name = "typecrab",
     about = "A minimalistic, customizable typing test.",
     version
 )]
@@ -259,6 +261,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
+    // drawing start screen
+    loop {
+        terminal.draw(|f| {
+            let size = f.size();
+            f.render_widget(StartView, size);
+        })?;
+
+        if event::poll(Duration::from_millis(50))? {
+            match event::read()? {
+                Event::Key(_) => break,
+                Event::Resize(_, _) => continue,
+                _ => {}
+            }
+        }
+    }
+    
+    // choosing what warning to show
     let response_message = config_response.message.clone().or(generation_response.message.clone());
     let mut warning_message = response_message.clone();
 

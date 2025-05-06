@@ -20,8 +20,8 @@ edition = "2021"
 rust-version = "1.78"
 
 # repository info
-repository = "https://github.com/admtrv/TypeCrab.git"
-homepage = "https://github.com/admtrv/TypeCrab"
+repository = "https://github.com/admtrv/typecrab.git"
+homepage = "https://github.com/admtrv/typecrab"
 
 # other metadata
 keywords = ["typing", "cli", "productivity"]

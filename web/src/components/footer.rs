@@ -31,13 +31,13 @@ pub fn Footer() -> Element {
                 }
                 li {
                     a { 
-                        href: "https://github.com/admtrv/TypeCrab",
+                        href: "https://github.com/admtrv/typeCrab",
                         target: "_blank",
                         img { 
                             src: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
                             alt: "GitHub Logo",
                             class: "avatar",
-                            title: "TypeCrab Repository"
+                            title: "Typecrab Repository"
                         }
                     }
                 }

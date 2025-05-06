@@ -72,13 +72,13 @@ impl<'a> Widget for TestView<'a> {
 
         // render test
         let prompt = Paragraph::new(test_lines)
-            .block(styled_block("Test"));
+            .block(styled_block(" test "));
         prompt.render(layout[0], buf);
 
         // render status
         let status_line = build_status(&self.warning, &self.status);
         let status = Paragraph::new(status_line)
-            .block(styled_block("Status"));
+            .block(styled_block(" status "));
         status.render(layout[1], buf);
     }
 }

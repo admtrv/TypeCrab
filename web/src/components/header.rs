@@ -9,7 +9,7 @@ pub fn Header() -> Element {
                 a{ href: "/",
                     img { id: "logo",
                         src: LOGO_PNG, 
-                        alt: "TypeCrab Logo"
+                        alt: "Typecrab Logo"
                     }
                 },
             nav { 

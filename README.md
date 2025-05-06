@@ -3,7 +3,7 @@
 </p>
 
 # Introduction  
-Our project is a lightweight and customizable typing test, inspired by [MonkeyType](https://monkeytype.com/). It will be implemented in Rust and feature both a command-line interface (CLI) and a web-based UI. Test yourself in various modes, track your progress and improve your speed.
+Our project is a lightweight and customizable typing test, inspired by [Monkeytype](https://monkeytype.com/). It will be implemented in Rust and feature both a command-line interface (CLI) and a web-based UI. Test yourself in various modes, track your progress and improve your speed.
 
 # Motivation 
 Existing typing tests often focus either on visual effects and gamification or, conversely, on a minimalistic interface without flexibility. This leads to some tools being too heavy and overloaded with unnecessary features, while others are limited in customization and use. In addition, most popular solutions are written in high-level languages, which affects their performance. Our project is aimed at creating a fast, cross-platform typing test with minimalistic design, support for custom settings and the ability to work both in the CLI and in the browser to use it both while surfing the web or while writing working projects right in the console.
@@ -54,7 +54,7 @@ Accordingly, the project is organized into modular crates:
 - `Cargo.toml` - the workspace manifest that defines dependencies and members (`core`, `cli`, `web`), each sub-crate also has its own `Cargo.toml`
 
 ```
-TypeCrab/
+typecrab/
 ├── core/
 │   ├── src/
 │   │   └── lib.rs
