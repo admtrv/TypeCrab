@@ -325,15 +325,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // status display
-        let status_string: Option<String> = if warning_message.is_some() { // priority - warning message
+        let status_string: Option<String> = if warning_message.is_some() {  // priority - warning message
             None
-        } else if config.mode == GameMode::Zen { // next - if zen mode
-            Some(test.current_word.to_string())
-        } else if let Some(limit) = config.time_limit { // next - time
+        } else if let Some(limit) = config.time_limit {     // next - time
             let time_left = limit as i64 - elapsed as i64;
             Some(time_left.to_string())
-        } else {
-            Some(format!("{}/{}", test.current_word, test.words.len())) // next - words
+        } else {                                // next - words
+            if config.mode == GameMode::Zen {
+                Some(test.current_word.to_string())
+            }
+            else {
+                Some(format!("{}/{}", test.current_word, test.words.len()))
+            }
         };
 
         // rendering current state
