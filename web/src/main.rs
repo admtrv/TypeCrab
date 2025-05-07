@@ -6,19 +6,6 @@ use dioxus_toast::{ToastFrame, ToastInfo, ToastManager};
 use components::*;
 use pages::*;
 /// Define a components module that contains all shared components for our app.
-use typingcore::{
-    Config,
-    GameMode,
-    Level,
-    RawResults,
-    process_results,
-    language_from_str,
-    SCHEMES_DIR,
-    generate_content,
-    list_languages,
-    list_schemes,
-    validate_config,
-};
 mod components;
 mod pages;
 
@@ -49,17 +36,6 @@ enum Route {
 fn App() -> Element {
     let toast = use_context_provider(|| Signal::new(ToastManager::default()));
 
-    let config = use_signal(|| Config::default());
-    
-    let words = use_resource(move || async move {
-        let generation_response = generate_content(&config.read()).await;
-
-        if let Some((Level::Error, msg)) = &generation_response.message {
-            std::process::exit(1);
-        }
-
-        generation_response.payload
-    });
 
 
     rsx! {
