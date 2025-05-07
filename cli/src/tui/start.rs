@@ -58,12 +58,12 @@ fn build_start() -> Vec<Line<'static>> {
     ];
 
     const TEXT_LINES: &[&str] = &[
-        "                                             ▄     ",
-        "▄█▄  ▄   ▄▄ ▄▄▄▄▄▄     ▄▄▄   ▄▄▄  ▄▄▄   ▄▄▄  █ ▄▄▄ ",
-        "▀█▀▀ ██ ██▀  ██▀▀██▄ ▄██▄██ █▀▀██ ██▀▀ ▀▀███ ██▀▀██",
-        " █▄   ███▀   ██  ███ ██▀▀▀  █▄ ▄▄ ██   ██▀██ ██ ▄██",
-        " ▀▀▀ ▄▄█▀    ██▀▀▀    ▀▀▀▀▀ ▀▀▀▀▀ ▀▀   ▀▀▀▀▀ ▀▀▀▀▀ ",
-        "     ▀▀▀     ▀▀                                  ",
+        "                                                 ▄▄    ",
+        "▄██▄▄ ▄▄   ▄▄ ▄▄▄▄▄   ▄▄▄▄   ▄▄▄▄  ▄ ▄▄▄   ▄▄▄▄  ██▄▄▄ ",
+        "▀██▀▀ ▀██ ██▀ ██▀▀██ ██▀▀██ ██▀ ▀▀ ██▀▀██ ▀▀  ██ ██▀▀██",
+        " ██▄   ▀███▀  ██  ██ ██▀▀▀  ██▄ ▄▄ ██     ▄█▀▀██ ██  ██",
+        "  ▀▀  ▄▄██    ██▀▀▀   ▀▀▀▀▀  ▀▀▀▀  ▀▀     ▀▀▀▀▀▀ ▀▀▀▀▀ ",
+        "      ▀▀▀     ▀▀                                       ",
     ];
 
     let logo_height = LOGO_LINES.len();
@@ -88,16 +88,6 @@ fn build_start() -> Vec<Line<'static>> {
 
         lines.push(Line::from(vec![logo_span, gap_span, text_span]));
     }
-
-    // empty line
-    // lines.push(Line::from(""));
-
-    // message
-    // let msg = "Press any key to continue...";
-    // let pad = (total_width.saturating_sub(msg.chars().count())) / 2;
-    // let centered_msg = format!("{:width$}{}", "", msg, width = pad);
-
-    // lines.push(Line::from(Span::styled(centered_msg, Style::default().fg(*COLOR_WHITE))));
-
+    
     lines
 }
