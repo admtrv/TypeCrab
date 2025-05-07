@@ -1,3 +1,7 @@
+/*
+ * core/test.rs
+ */
+
 use std::time::Instant;
 
 use crate::{
@@ -7,7 +11,8 @@ use crate::{
         Event,
         Word,
         RawResults
-    }
+    },
+    GameMode
 };
 
 
@@ -18,6 +23,7 @@ pub struct Test {
     pub complete: bool,
     pub backtrack: bool,
     pub death: bool,
+    pub mode: GameMode,
     start_time: Instant,
 }
 
@@ -30,6 +36,7 @@ impl Test {
             complete: false,
             backtrack: config.backtrack,
             death: config.death,
+            mode: config.mode,
             start_time: Instant::now(),
         }
     }
@@ -44,12 +51,61 @@ impl Test {
 
         let current = &mut self.words[self.current_word];
 
+        // zen mode
+        if self.mode == GameMode::Zen {
+            match key {
+                Key::CtrlC | Key::Escape => {
+                    current.events.push(Event { time: elapsed, key, correct: None });
+                    self.complete = true;
+                }
+
+                Key::Enter | Key::Space => {
+                    if current.progress.is_empty() {
+                        return;
+                    }
+
+                    current.events.push(Event { time: elapsed, key, correct: None });
+                    self.next_word();
+                }
+
+
+                Key::Backspace => {
+                    if current.progress.is_empty() {
+                        if self.backtrack && self.current_word > 0 {
+                            self.prev_word();
+
+                            self.words[self.current_word].events.push(Event {
+                                time: elapsed,
+                                key,
+                                correct: None,
+                            });
+                        }
+                    } else {
+                        current.progress.pop();
+                        current.text.pop();
+                        current.events.push(Event { time: elapsed, key, correct: None });
+                    }
+                }
+
+                Key::Char(c) => {
+                    current.progress.push(c);
+                    current.text.push(c);
+                    current.events.push(Event { time: elapsed, key, correct: Some(true) });
+                }
+
+                _ => {}
+            }
+
+            return;
+        }
+
+        // other modes
         match key {
             // end current test
             Key::CtrlC | Key::Escape => {
                 current.events.push(Event {
                     time: elapsed,
-                    key: key,
+                    key,
                     correct: None,
                 });
                 self.complete = true;
@@ -61,7 +117,7 @@ impl Test {
                     let correct = current.text == current.progress;
                     current.events.push(Event {
                         time: elapsed,
-                        key: key,
+                        key,
                         correct: None,
                     });
 
@@ -83,15 +139,15 @@ impl Test {
                         // save backspace key press in prev word
                         self.words[self.current_word].events.push(Event {
                             time: elapsed,
-                            key: key,
-                            correct: None
+                            key,
+                            correct: None,
                         });
                     }
                 } else {
                     current.progress.pop();
                     current.events.push(Event {
                         time: elapsed,
-                        key: key,
+                        key,
                         correct: None,
                     });
                 }
@@ -129,10 +185,19 @@ impl Test {
     }
 
     fn next_word(&mut self) {
-        if self.current_word == self.words.len() - 1 {
-            self.complete = true;
-        } else {
+        if self.mode == GameMode::Zen {
+            // zen mode has no boundaries = append new empty word at the end
+            if self.current_word == self.words.len() - 1 {
+                self.words.push(Word::from(String::new()));
+            }
             self.current_word += 1;
+        } else {
+            // mark test complete if last word reached
+            if self.current_word == self.words.len() - 1 {
+                self.complete = true;
+            } else {
+                self.current_word += 1;
+            }
         }
     }
 }
