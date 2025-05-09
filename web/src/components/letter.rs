@@ -4,9 +4,10 @@ use dioxus::prelude::*;
 pub enum LetterState {
     Correct,
     Incorrect,
+    Active,
 }
 
-#[derive(Props, PartialEq)]
+#[derive(Props, PartialEq, Clone)]
 pub struct LetterProps {
     letter: char,
     state: Option<LetterState>,
@@ -17,11 +18,12 @@ pub fn Letter(props: LetterProps) -> Element {
     let class = match props.state {
         Some(LetterState::Correct) => "letter correct",
         Some(LetterState::Incorrect) => "letter incorrect",
-        None => "letter",
+        Some(LetterState::Active) => "letter active",
+        None => "letter", // Use "active" for the next expected character
     };
-    rsx!{
+    rsx! {
         span {
-           class: "{class}",
+            class: "{class}",
             "{props.letter}"
         }
     }

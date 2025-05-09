@@ -101,3 +101,30 @@ ul {
 .avatar:hover {
   transform: scale(1.2);
 }
+.word {
+  display: inline;
+  width: fit-content;
+}
+.word::after {
+  content: " ";
+  font-size: 1.5rem;
+}
+.letter {
+  font-family: monospace;
+  font-size: 1.5rem;
+  color: var(--blue-color);
+}
+
+.letter.correct {
+  color: var(--green-color);
+}
+
+.letter.incorrect {
+  color: var(--red-color);
+}
+.letter.active {
+  font-family: monospace;
+  font-size: 1.5rem;
+  color: var(--white-color);
+  text-decoration: underline;
+}
