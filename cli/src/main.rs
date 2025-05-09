@@ -264,7 +264,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drawing start screen
     loop {
         terminal.draw(|f| {
-            let size = f.size();
+            let size = f.area();
             f.render_widget(StartView, size);
         })?;
 
@@ -325,13 +325,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // status display
-        let status_string: Option<String> = if warning_message.is_some() { // priority - warning message
+        let status_string: Option<String> = if warning_message.is_some() {  // priority - warning message
             None
-        } else if let Some(limit) = config.time_limit { // next - time
+        } else if let Some(limit) = config.time_limit {     // next - time
             let time_left = limit as i64 - elapsed as i64;
             Some(time_left.to_string())
-        } else {
-            Some(format!("{}/{}", test.current_word, test.words.len())) // next - words
+        } else {                                // next - words
+            if config.mode == GameMode::Zen {
+                Some(test.current_word.to_string())
+            }
+            else {
+                Some(format!("{}/{}", test.current_word, test.words.len()))
+            }
         };
 
         // rendering current state
@@ -347,24 +352,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     }
 
-    let raw_results = RawResults::from(&test);
+    // zen mode = exit, because sensitive psyche of zen mod user will not tolerate his horrifying erroneous results
+    if config.mode != GameMode::Zen {
+        let raw_results = RawResults::from(&test);
 
-    // api final results generation from raw test results
-    let final_results = process_results(raw_results).payload;
+        // api final results generation from raw test results
+        let final_results = process_results(raw_results).payload;
 
-    // render results
-    loop {
-        terminal.draw(|f| {
-            let size = f.area();
-            let view = ResultView { results: &final_results };
-            f.render_widget(view, size);
-        })?;
+        // render results
+        loop {
+            terminal.draw(|f| {
+                let size = f.area();
+                let view = ResultView { results: &final_results };
+                f.render_widget(view, size);
+            })?;
 
-        if event::poll(Duration::from_millis(50))? {
-            match crossterm::event::read()? {
-                Event::Key(_) => break,
-                Event::Resize(_, _) => continue,
-                _ => {}
+            if event::poll(Duration::from_millis(50))? {
+                match crossterm::event::read()? {
+                    Event::Key(_) => break,
+                    Event::Resize(_, _) => continue,
+                    _ => {}
+                }
             }
         }
     }

@@ -106,9 +106,19 @@ fn build_test(test: &Test, max_width: usize) -> Vec<Line> {
             current_width = 0;
         }
 
-        // add space if needed
+        // add space
         if !current_spans.is_empty() {
-            current_spans.push(Span::raw(" "));
+            // avoid duplicate underline at end
+            let underline_space = {
+                let prev = i - 1;
+                prev == test.current_word && test.words[prev].progress.len() >= test.words[prev].text.len() && test.current_word < test.words.len() - 1
+            };
+
+            if underline_space {
+                current_spans.push(Span::styled(" ", *STYLE_UNDERLINE));
+            } else {
+                current_spans.push(Span::raw(" "));
+            }
             current_width += 1;
         }
 
@@ -145,8 +155,9 @@ fn word_to_spans(i: usize, test: &Test) -> Vec<Span<'static>> {
     let typed = &test.words[i].progress;
     let text = &test.words[i].text;
     let is_current = i == test.current_word;
+    let is_last = i == test.words.len() - 1;
 
-    highlight_word(typed, text, is_current)
+    highlight_word(typed, text, is_current, is_last)
 }
 
 // highlighting word by symbols:
@@ -154,56 +165,52 @@ fn word_to_spans(i: usize, test: &Test) -> Vec<Span<'static>> {
 //  after first mistake - all red
 //  current symbol - underline
 //  remaining part - grey (inactive part)
-fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<Span<'static>> {
-    // split both strings into characters
+fn highlight_word(typed: &str, text:  &str, is_current: bool, is_last: bool, ) -> Vec<Span<'static>> {
     let typed_chars: Vec<char> = typed.chars().collect();
     let text_chars: Vec<char> = text.chars().collect();
 
     let mut spans = Vec::new();
-    let mut mismatch_happened = false;
+    let mut mismatch = false;
     let mut i = 0;
 
-    // compare each typed char with target char
+    // matched and mismatched part
     while i < typed_chars.len() && i < text_chars.len() {
-        let t_char = typed_chars[i];
-        let r_char = text_chars[i];
+        let t = typed_chars[i];
+        let r = text_chars[i];
 
-        if mismatch_happened {
-            // after first mistake - everything red
-            spans.push(Span::styled(r_char.to_string(), *STYLE_INCORRECT));
-        } else if t_char == r_char {
-            // correct character - green
-            spans.push(Span::styled(t_char.to_string(), *STYLE_CORRECT));
+        if mismatch {
+            spans.push(Span::styled(r.to_string(), *STYLE_INCORRECT));
+        } else if t == r {
+            spans.push(Span::styled(t.to_string(), *STYLE_CORRECT));
         } else {
-            // first mistake - red and set flag
-            mismatch_happened = true;
-            spans.push(Span::styled(r_char.to_string(), *STYLE_INCORRECT));
+            mismatch = true;
+            spans.push(Span::styled(r.to_string(), *STYLE_INCORRECT));
         }
         i += 1;
     }
 
-    // remaining typed chars (extra input) - red
+    // extra characters
     for &c in &typed_chars[i..] {
         spans.push(Span::styled(c.to_string(), *STYLE_INCORRECT));
     }
 
-    // if user not completed word
-    if i < text_chars.len() {
-        if is_current {
-            // current word - underline next expected char
-            spans.push(Span::styled(
-                text_chars[i].to_string(),
-                *STYLE_UNDERLINE,
-            ));
-            // rest - gray
+    if is_current {
+        if i < text_chars.len() {
+            // underline next expected character
+            spans.push(Span::styled(text_chars[i].to_string(), *STYLE_UNDERLINE));
+
+            // show remaining characters as inactive
             for &ch in &text_chars[i + 1..] {
                 spans.push(Span::styled(ch.to_string(), *STYLE_INACTIVE));
             }
-        } else {
-            // nt current - all remaining chars gray
-            for &ch in &text_chars[i..] {
-                spans.push(Span::styled(ch.to_string(), *STYLE_INACTIVE));
-            }
+        } else if is_last {
+            // underline space if at the end of the last word
+            spans.push(Span::styled(" ", *STYLE_UNDERLINE));
+        }
+    } else if i < text_chars.len() {
+        // inactive characters for incomplete word
+        for &ch in &text_chars[i..] {
+            spans.push(Span::styled(ch.to_string(), *STYLE_INACTIVE));
         }
     }
 

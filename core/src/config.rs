@@ -143,6 +143,21 @@ pub fn validate_config(mut config: Config) -> ConfigResponse {
                 messages.push("zen mode ignores numbers".to_string());
                 level.escalate(Level::Warning);
             }
+            if !config.backtrack {
+                config.backtrack = true;
+                messages.push("zen mode ignores strict mode".to_string());
+                level.escalate(Level::Warning);
+            }
+            if config.death {
+                config.death = false;
+                messages.push("zen mode ignores sudden death mode".to_string());
+                level.escalate(Level::Warning);
+            }
+            if config.time_limit.is_some() {
+                config.time_limit = None;
+                messages.push("zen mode ignores time limit".to_string());
+                level.escalate(Level::Warning);
+            }
         }
     }
 

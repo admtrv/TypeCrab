@@ -55,10 +55,7 @@ macro_rules! generate_content {
                 return match config.mode {
                     GameMode::Words => GeneratorResponse::plain(finalize_lines(lines, config)),
                     GameMode::Quote => GeneratorResponse::plain(split_lines(lines)),
-                    GameMode::Zen => GeneratorResponse::with_error(
-                        Vec::new(),
-                        "zen mode should not receive a file".to_string(),
-                    ),
+                    GameMode::Zen => GeneratorResponse::plain(vec![String::new()]),
                 };
             }
 
@@ -101,7 +98,7 @@ macro_rules! generate_content {
                 }
 
                 GameMode::Zen => {
-                    GeneratorResponse::with_info(Vec::new(), "zen mode doesn't require words")
+                    GeneratorResponse::plain(vec![String::new()])
                 }
             }
         }
