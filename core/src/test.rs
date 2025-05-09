@@ -2,7 +2,7 @@
  * core/test.rs
  */
 
-use std::time::Instant;
+use instant::Instant; 
 
 use crate::{
     Config,
