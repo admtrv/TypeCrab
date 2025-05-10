@@ -128,3 +128,152 @@ ul {
   color: var(--white-color);
   text-decoration: underline;
 }
+.results-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--dark-color);
+  color: var(--white-color);
+  font-family: monospace;
+}
+
+.graph-section {
+  height: 70%;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.graph-panel {
+  border: 2px solid var(--orange-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.graph-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.axis-label {
+  fill: var(--orange-color);
+  font-size: 4px;
+}
+
+.axis-title {
+  fill: var(--orange-color);
+  font-size: 4px;
+}
+
+.raw-wpm-line {
+  fill: none;
+  stroke: var(--blue-color);
+  stroke-width: 0.5;
+}
+
+.wpm-line {
+  fill: none;
+  stroke: var(--orange-color);
+  stroke-width: 0.5;
+}
+
+.error-point {
+  fill: var(--red-color);
+}
+
+.bottom-section {
+  height: 30%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.info-section {
+  width: 40%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.info-panel {
+  border: 2px solid var(--orange-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 2rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+}
+
+.info-label {
+  color: var(--white-color);
+}
+
+.info-value {
+  color: var(--orange-color);
+}
+
+.keyboard-section {
+  width: 60%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.keyboard-panel {
+  border: 2px solid var(--orange-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.keyboard-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.keyboard-row {
+  display: flex;
+  align-items: center;
+}
+
+.keyboard-shift {
+  display: inline-block;
+}
+
+.key {
+  font-size: 2rem;
+  height: 3rem;
+  width: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+  color: var(--white-color);
+}
+
+.key-normal {
+  background-color: var(--orange-color);
+}
+
+.key-error {
+  background-color: var(--red-color);
+}
