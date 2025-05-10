@@ -7,27 +7,31 @@ use typingcore::{
 };
 use super::letter::{LetterState, Letter};
 use web_sys::js_sys::Date;
+use web_sys::console;
 
 fn convert_key(event: Event<KeyboardData>) -> Key {
-    match event.code() {
-        Code::Enter => Key::Enter,
-        Code::Backspace => Key::Backspace,
-        Code::Escape => Key::Escape,
-        Code::Space => Key::Space,
-        code => {
-            let code_str = code.to_string();
-            if code_str.starts_with("Key") && code_str.len() == 4 {
-                Key::Char(code_str.chars().nth(3).unwrap().to_ascii_lowercase())
+    match event.key().to_string().as_str() {
+        "Enter" => Key::Enter,
+        "Backspace" => Key::Backspace,
+        "Escape" => Key::Escape,
+        " " => Key::Space,
+        key => {
+            if key.len() == 1 {
+                // Single character keys (e.g., "a", "A", "1", "@") are treated as chars
+                Key::Char(key.chars().next().unwrap())
             } else {
-                Key::Other(code_str)
+                // Other keys (e.g., "Shift", "Control", "F1") are treated as Other
+                Key::Other(key.to_string())
             }
         }
     }
 }
 
 fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<(char, Option<LetterState>)> {
+
     let typed_chars: Vec<char> = typed.chars().collect();
     let text_chars: Vec<char> = text.chars().collect();
+
     let mut result = Vec::new();
     let mut missmatch_happened = false;
     let mut i = 0;
