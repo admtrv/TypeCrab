@@ -15,3 +15,5 @@ mod results;
 pub use results::{Results};
 
 
+mod test;
+pub use test::{TestComponent};
