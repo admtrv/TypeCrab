@@ -25,7 +25,7 @@ impl Default for StoredConfig {
     fn default() -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
-            name: "Default Config".to_string(),
+            name: "default config".to_string(),
             config: Config::default()
         }
     }
@@ -85,7 +85,7 @@ pub fn Settings() -> Element {
             div {
                 id: "settings-container",
                 label {
-                    "Selected config",
+                    "config",
                     select {
                         for config in configs.read().clone() {
                         option {
@@ -107,7 +107,7 @@ pub fn Settings() -> Element {
                             current_config.set(config);
                         } 
                     },
-                    "Create config" 
+                    "create" 
                 }
                 button {
                     id: "delete",
@@ -149,7 +149,7 @@ pub fn Settings() -> Element {
                         }
                     },
                     disabled: configs.read().len() <= 1,
-                    "Delete"
+                    "delete"
                 }
             }
             form {
@@ -246,15 +246,15 @@ pub fn Settings() -> Element {
                         toast.write().popup(ToastInfo::success("Configs saved!", "Success"));
                     }
                 },
-                label { "Config name",
+                label { "config name",
                     input {
                         name: "name",
                         r#type: "text",
-                        placeholder: "Enter config name",
+                        placeholder: "enter config name",
                         value: "{current_config.read().name}"
                     }
                 }
-                label { "Game mode",
+                label { "game mode",
                         select {
                             name: "mode",
                             onchange: move |event| {
@@ -270,13 +270,13 @@ pub fn Settings() -> Element {
                                 new_config.config.mode = new_mode;
                                 current_config.set(new_config); 
                             },
-                            option { value: "words", selected: current_config.read().config.mode == GameMode::Words, "Words" }
-                        option { value: "quote", selected: current_config.read().config.mode == GameMode::Quote, "Quote" }
-                        option { value: "zen", selected: current_config.read().config.mode == GameMode::Zen, "Zen" }
+                            option { value: "words", selected: current_config.read().config.mode == GameMode::Words, "words" }
+                        option { value: "quote", selected: current_config.read().config.mode == GameMode::Quote, "quote" }
+                        option { value: "zen", selected: current_config.read().config.mode == GameMode::Zen, "zen" }
                     }
                 }
                 if current_config.read().config.mode != GameMode::Zen {
-                    label { "Language",
+                    label { "language",
                         select {
                         name: "language",
                                     for lang in language_options {
@@ -288,7 +288,7 @@ pub fn Settings() -> Element {
                             }
                         }
                     }
-                    label { "Word count", 
+                    label { "word count", 
                         input {
                             name: "word-count",
                             r#type: "number",
@@ -298,7 +298,7 @@ pub fn Settings() -> Element {
                         }
                     }
                 }
-                label { "Time limit (Optional)",
+                label { "time limit (optional)",
                     input {
                         name: "time-limit",
                         r#type: "number",
@@ -308,14 +308,14 @@ pub fn Settings() -> Element {
                 }
 
                 if current_config.read().config.mode == GameMode::Words {
-                    label {"Punctuation", 
+                    label {"punctuation", 
                         input {
                         name: "punctuation",
                         r#type: "checkbox",
                         checked:"{current_config.read().config.punctuation}"
                         }
                     }
-                    label {"Numbers", 
+                    label {"numbers", 
                         input {
                             name: "numbers",
                             r#type: "checkbox",
@@ -324,7 +324,7 @@ pub fn Settings() -> Element {
                     }
                 }
 
-                label {"Backtrack", 
+                label {"backtrack", 
                     input {
                         name: "backtrack",
                         r#type: "checkbox",
@@ -332,7 +332,7 @@ pub fn Settings() -> Element {
                     } 
                 }
 
-                label {"Death" ,
+                label {"death" ,
                     input {
                         name: "death",
                         r#type: "checkbox",
@@ -341,7 +341,7 @@ pub fn Settings() -> Element {
                 }
                 input {
                     r#type: "submit",
-                    value: "Save config",
+                    value: "save",
                 }
             }
         }
