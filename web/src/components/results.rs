@@ -4,7 +4,8 @@ use typingcore::results::FinalResults;
 use web_sys::{console};
 
 fn x_axis_labels(x_max: f64) -> Vec<Element> {
-    (0..=(x_max as u64)).map(|i| {
+    let step = if x_max >= 15.0 { 5 } else { 1 };
+    (0..=(x_max as u64)).step_by(step).map(|i| {
         let x = 10.0 + (i as f64 / x_max * 180.0); // Scale to fit 180 units (200 - 10 left - 10 right)
         rsx!(
             text {
