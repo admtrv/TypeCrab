@@ -1,6 +1,6 @@
 use std::fs::{self, File};
 use std::io::{self, Write};
-use std::path::{Path};
+use std::path::Path;
 
 // Define constants for directory paths
 const QUOTES_DIR: &str = "../resources/quotes";
@@ -21,22 +21,16 @@ fn kebab_to_camel(s: &str) -> String {
 
 // Function to recursively copy a directory and its contents
 fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
-    // Create the destination directory if it doesn't exist
     if !dst.exists() {
         fs::create_dir_all(dst)?;
     }
-
-    // Iterate over the source directory's entries
     for entry in fs::read_dir(src)? {
         let entry = entry?;
         let src_path = entry.path();
         let dst_path = dst.join(entry.file_name());
-
-        // If it's a directory, recurse
         if src_path.is_dir() {
             copy_dir_recursive(&src_path, &dst_path)?;
         } else {
-            // If it's a file, copy it
             fs::copy(&src_path, &dst_path)?;
         }
     }
@@ -63,14 +57,29 @@ fn generate_languages_file() -> io::Result<()> {
     let mut quotes_variants = Vec::new();
     let quotes_path = Path::new(QUOTES_DIR);
 
-    // Collect variants for QuotesLanguages from folders
+    // Collect variants and quote files for QuotesLanguages from folders
     for entry in fs::read_dir(quotes_path)? {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
             if let Some(folder_name) = path.file_name().and_then(|s| s.to_str()) {
                 let variant_name = kebab_to_camel(folder_name);
-                quotes_variants.push((variant_name, folder_name.to_string()));
+                // Collect .txt files in the language directory
+                let mut quote_files = Vec::new();
+                for quote_entry in fs::read_dir(&path)? {
+                    let quote_entry = quote_entry?;
+                    let quote_path = quote_entry.path();
+                    if quote_path.is_file()
+                        && quote_path.extension().and_then(|s| s.to_str()) == Some("txt")
+                    {
+                        if let Some(quote_file_name) = quote_path.file_name().and_then(|s| s.to_str())
+                        {
+                            quote_files.push(quote_file_name.to_string());
+                        }
+                    }
+                }
+                quote_files.sort(); // Ensure consistent order
+                quotes_variants.push((variant_name, folder_name.to_string(), quote_files));
             }
         }
     }
@@ -78,8 +87,8 @@ fn generate_languages_file() -> io::Result<()> {
     // Generate languages.rs content
     let mut content = String::new();
     content.push_str("use crate::config::{GameMode, Language};\n\n");
-
     content.push_str("use serde::{Serialize, Deserialize};\n\n");
+
     // WordsLanguages enum
     content.push_str("/// Auto-generated enum for words languages\n");
     content.push_str("#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]\npub enum WordsLanguages {\n");
@@ -118,14 +127,14 @@ fn generate_languages_file() -> io::Result<()> {
     // QuotesLanguages enum
     content.push_str("/// Auto-generated enum for quotes languages\n");
     content.push_str("#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]\npub enum QuotesLanguages {\n");
-    for (variant_name, _) in &quotes_variants {
+    for (variant_name, _, _) in &quotes_variants {
         content.push_str(&format!("    {},\n", variant_name));
     }
     content.push_str("}\n\n");
 
     content.push_str("impl QuotesLanguages {\n");
     content.push_str("    pub fn dir_path(&self) -> &'static str { match self {\n");
-    for (variant_name, folder_name) in &quotes_variants {
+    for (variant_name, folder_name, _) in &quotes_variants {
         content.push_str(&format!(
             "        QuotesLanguages::{} => \"/assets/quotes/{}/\",\n",
             variant_name, folder_name
@@ -133,14 +142,24 @@ fn generate_languages_file() -> io::Result<()> {
     }
     content.push_str("    } }\n\n");
 
+    content.push_str("    pub fn quote_files(&self) -> &'static [&'static str] { match self {\n");
+    for (variant_name, _, quote_files) in &quotes_variants {
+        content.push_str(&format!("        QuotesLanguages::{} => &[\n", variant_name));
+        for file_name in quote_files {
+            content.push_str(&format!("            \"{}\",\n", file_name));
+        }
+        content.push_str("        ],\n");
+    }
+    content.push_str("    } }\n\n");
+
     content.push_str("    pub fn all() -> &'static [QuotesLanguages] { &[\n");
-    for (variant_name, _) in &quotes_variants {
+    for (variant_name, _, _) in &quotes_variants {
         content.push_str(&format!("        QuotesLanguages::{},\n", variant_name));
     }
     content.push_str("    ] }\n\n");
 
     content.push_str("    pub fn as_str(&self) -> &'static str { match self {\n");
-    for (variant_name, folder_name) in &quotes_variants {
+    for (variant_name, folder_name, _) in &quotes_variants {
         content.push_str(&format!(
             "        QuotesLanguages::{} => \"{}\",\n",
             variant_name, folder_name
@@ -179,22 +198,17 @@ fn generate_languages_file() -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-
     let target = std::env::var("TARGET").expect("TARGET not set");
 
-    // Check if the target is for WebAssembly (web target)
     if target.contains("wasm32") {
-        // Set the cfg flag for the web target
         println!("cargo:rustc-cfg=getrandom_backend=\"wasm_js\"");
     }
-    let source = Path::new("../resources"); // Source directory
-    let destination = Path::new("../web/public/"); // Destination directory
+    let source = Path::new("../resources");
+    let destination = Path::new("../web/public/");
 
-    // Copy directory
     copy_dir_recursive(source, destination)?;
     println!("Directory copied successfully!");
 
-    // Generate languages.rs
     generate_languages_file()?;
     println!("languages.rs generated successfully!");
 

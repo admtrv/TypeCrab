@@ -85,10 +85,18 @@ macro_rules! generate_content {
 
                 GameMode::Quote => {
                     if let Language::Quotes(lang) = config.language {
-                        match load_quote(lang.as_str()) {
-                            Ok(lines) => GeneratorResponse::plain(split_lines(lines)),
-                            Err(e) => GeneratorResponse::with_error(Vec::new(), e),
-                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        let lines = match load_quote(lang.as_str()).await {
+                            Ok(lines) => lines,
+                            Err(e) => return GeneratorResponse::with_error(Vec::new(), e),
+                        };
+                        #[cfg(not(target_arch = "wasm32"))]
+                        let lines = match load_quote(lang.as_str()) {
+                            Ok(lines) => lines,
+                            Err(e) => return GeneratorResponse::with_error(Vec::new(), e),
+                        };
+                        GeneratorResponse::plain(split_lines(lines))
                     } else {
                         GeneratorResponse::with_error(
                             Vec::new(),
@@ -136,6 +144,42 @@ fn load_words(lang: &str) -> Result<Vec<String>, String> {
     load_file(&path).map_err(|e| format!("cannot read words '{}', {}", path.display(), e))
 }
 
+#[cfg(target_arch = "wasm32")]
+async fn load_quote(lang: &str) -> Result<Vec<String>, String> {
+    use crate::languages::{language_from_str, QuotesLanguages};
+    use crate::config::GameMode;
+
+    // Convert language string to QuotesLanguages enum
+    let language = match language_from_str(lang, GameMode::Quote) {
+        Language::Quotes(lang) => lang,
+        _ => return Err("invalid language for quote mode".to_string()),
+    };
+
+    // Get list of quote files for the language
+    let quote_files = language.quote_files();
+    if quote_files.is_empty() {
+        return Err("no quote files available for this language".to_string());
+    }
+
+    // Select a random quote file
+    let mut rng = rng();
+    let selected_file = quote_files
+        .choose(&mut rng)
+        .ok_or_else(|| "failed to select quote file".to_string())?;
+
+    // Construct URL and fetch the file
+    let url = format!("{}/assets/quotes/{}/{}", base_url(), lang, selected_file);
+    let text = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("failed to fetch quote: {}", e))?
+        .text()
+        .await
+        .map_err(|e| format!("failed to read response: {}", e))?;
+
+    Ok(text.lines().map(|s| s.to_string()).collect())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn load_quote(lang: &str) -> Result<Vec<String>, String> {
     let dir = Path::new(QUOTES_DIR).join(lang);
     let files = fs::read_dir(&dir)
