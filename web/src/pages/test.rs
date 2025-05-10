@@ -38,6 +38,24 @@ pub fn TypingTest() -> Element {
     let mut words = use_signal(|| None::<Rc<Vec<String>>>);
     let mut final_results = use_signal(|| None::<FinalResults>);
 
+    let restart_test = move |_| {
+        // Reset all relevant signals to their initial states
+        test.set(None);
+        test_start.set(None);
+        complete.set(false);
+        final_results.set(None);
+        
+        // Regenerate content based on current config
+        let config = current_config.read().config.clone();
+        spawn(async move {
+            let generation_response = generate_content(&config).await;
+            if let Some((Level::Error, msg)) = &generation_response.message {
+                console::log_1(&msg.as_str().into());
+            }
+            words.set(Some(Rc::new(generation_response.payload)));
+        });
+    };
+
     use_effect(move || {
         let config = current_config.read().config.clone();
         spawn(async move {
@@ -74,6 +92,12 @@ pub fn TypingTest() -> Element {
                         }
                     }
                 }
+
+            }
+            button {
+                class: "restart-button",
+                onclick: restart_test,
+                "restart"
             }
         }
     }

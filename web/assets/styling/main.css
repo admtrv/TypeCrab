@@ -33,6 +33,18 @@ select {
   color: var(--dark-color);
   font: inherit;
 }
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--dark-color);
+  transition:
+    background-color 0.3s ease-in-out,
+    transform 0.2s;
+}
 nav a {
   font-size: 2rem;
   transition: color 0.3s ease-in-out;
@@ -279,6 +291,7 @@ ul {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
   min-height: 100%;
   width: 100%;
   padding: 2rem;
@@ -332,4 +345,15 @@ ul {
   font-size: 1.5rem;
   color: var(--white-color);
   text-align: center;
+}
+.restart-button {
+  width: 150px;
+  font-size: 1.5rem;
+  color: var(--orangle-color);
+  border: 2px solid var(--orange-color);
+  background-color: transparent;
+}
+
+.restart-button:hover {
+  transform: scale(1.1);
 }
