@@ -6,11 +6,11 @@ use web_sys::{console};
 fn x_axis_labels(x_max: f64) -> Vec<Element> {
     let step = if x_max >= 15.0 { 5 } else { 1 };
     (0..=(x_max as u64)).step_by(step).map(|i| {
-        let x = 10.0 + (i as f64 / x_max * 180.0); // Scale to fit 180 units (200 - 10 left - 10 right)
+        let x = 10.0 + (i as f64 / x_max * 180.0); // Scale to fit 180 units
         rsx!(
             text {
                 x: "{x}",
-                y: "95",
+                y: "75", // Adjusted from 95
                 class: "axis-label",
                 "{i}"
             }
@@ -20,7 +20,7 @@ fn x_axis_labels(x_max: f64) -> Vec<Element> {
 
 fn y_axis_labels(y_top: u64) -> Vec<Element> {
     (0..=y_top).step_by(10).map(|i| {
-        let y = 90.0 - (i as f64 / y_top as f64 * 80.0); // Scale to fit 80 units (90 - 10 top)
+        let y = 70.0 - (i as f64 / y_top as f64 * 60.0); // Scale to fit 60 units (70 - 10 top)
         rsx!(
             text {
                 x: "8",
@@ -40,7 +40,7 @@ fn raw_wpm_polyline(raw_pts: &Vec<(f64, f64)>, x_max: f64, y_top: u64) -> Option
 
     let point_str = raw_pts.iter().map(|(t, w)| {
         let x = 10.0 + (t / x_max * 180.0); // Scale to 180 units
-        let y = 90.0 - (w / y_top as f64 * 80.0); // Scale to 80 units
+        let y = 70.0 - (w / y_top as f64 * 60.0); // Scale to 60 units
         format!("{},{}", x, y)
     }).collect::<Vec<_>>().join(" ");
 
@@ -59,7 +59,7 @@ fn wpm_polyline(wpm_pts: &Vec<(f64, f64)>, x_max: f64, y_top: u64) -> Option<Ele
 
     let point_str = wpm_pts.iter().map(|(t, w)| {
         let x = 10.0 + (t / x_max * 180.0); // Scale to 180 units
-        let y = 90.0 - (w / y_top as f64 * 80.0); // Scale to 80 units
+        let y = 70.0 - (w / y_top as f64 * 60.0); // Scale to 60 units
         format!("{},{}", x, y)
     }).collect::<Vec<_>>().join(" ");
 
@@ -74,12 +74,12 @@ fn wpm_polyline(wpm_pts: &Vec<(f64, f64)>, x_max: f64, y_top: u64) -> Option<Ele
 fn error_point_circles(err_pts: &Vec<(f64, f64)>, x_max: f64, y_top: u64) -> Vec<Element> {
     err_pts.iter().map(|(t, w)| {
         let x = 10.0 + (t / x_max * 180.0); // Scale to 180 units
-        let y = 90.0 - (w / y_top as f64 * 80.0); // Scale to 80 units
+        let y = 70.0 - (w / y_top as f64 * 60.0); // Scale to 60 units
         rsx!(
             circle {
                 cx: "{x}",
                 cy: "{y}",
-                r: "1",
+                r: "0.8", // Slightly smaller circle
                 class: "error-point"
             }
         )
@@ -140,16 +140,16 @@ pub fn Results(props: ResultsProps) -> Element {
                     class: "graph-panel",
                     svg {
                         class: "graph-svg",
-                        view_box: "0 0 200 100", // 2:1 aspect ratio (width = 2 * height)
+                        view_box: "0 0 200 80", // Changed from 200 100 to make the graph shorter
                         preserve_aspect_ratio: "xMidYMid meet",
-                        line { x1: "10", y1: "90", x2: "190", y2: "90", stroke: "white", stroke_width: "0.5" } // X-axis
-                        line { x1: "10", y1: "90", x2: "10", y2: "10", stroke: "white", stroke_width: "0.5" } // Y-axis
+                        line { x1: "10", y1: "70", x2: "190", y2: "70", stroke: "white", stroke_width: "0.5" } // Adjusted Y-axis
+                        line { x1: "10", y1: "70", x2: "10", y2: "10", stroke: "white", stroke_width: "0.5" } // Adjusted Y-axis
                         {x_axis_labels(x_max).into_iter()}
                         {y_axis_labels(y_top).into_iter()}
                         {raw_wpm_polyline(&raw_pts, x_max, y_top).into_iter()}
                         {wpm_polyline(&wpm_pts, x_max, y_top).into_iter()}
                         {error_point_circles(&err_pts, x_max, y_top).into_iter()}
-                        text { x: "195", y: "95", class: "axis-title", "sec" } 
+                        text { x: "195", y: "75", class: "axis-title", "sec" } // Adjusted Y position
                         text { x: "5", y: "5", class: "axis-title", "wpm" }
                     }
                 }
