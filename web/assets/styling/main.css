@@ -46,7 +46,7 @@ button {
     transform 0.2s;
 }
 nav a {
-  font-size: 2rem;
+  font-size: 4rem;
   transition: color 0.3s ease-in-out;
 }
 nav a:hover {
@@ -98,8 +98,6 @@ header {
 }
 #logo {
   height: 100px;
-  width: 200px;
-  transform: rotate(10deg);
 }
 ul {
   display: flex;

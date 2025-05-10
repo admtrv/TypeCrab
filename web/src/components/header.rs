@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-const LOGO_PNG: Asset = asset!("/assets/logo.min.png");
+const LOGO_PNG: Asset = asset!("/public/images/logos/horizontal-black-color.png");
 
 #[component]
 pub fn Header() -> Element { 
@@ -17,13 +17,13 @@ pub fn Header() -> Element {
                     li {
                         a { 
                             href: "/",
-                            "Test"
+                            "test"
                         }
                     }
                     li {
                         a { 
                             href: "/settings",
-                            "Settings"
+                            "settings"
                         }
                     }
                 }
