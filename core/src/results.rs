@@ -51,7 +51,7 @@ pub struct RawResults {
     pub words: Vec<Word>,
     pub events: Vec<Event>,
 }
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, PartialEq)] 
 pub struct KeyPresses {
     pub correct: usize,    
     pub incorrect: usize,
@@ -71,7 +71,7 @@ impl Default for KeyPresses {
     }
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, PartialEq)] 
 pub struct FinalResults {
     pub wpm: f64,                       // Words per minute (correct chars only)
     pub raw_wpm: f64,                   // Words per minute (all chars)
