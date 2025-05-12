@@ -93,6 +93,10 @@ Key decisions made during the design and implementation of the project:
 
    No interface assumes anything about the other. New UIs (e.g., mobile) could be added with minimal change by reusing Core API.
 
+5. **Unified Response Handling**
+
+   We introduced a simple response wrapper `Response<T>` in the core module to standardize how functions return data along with optional messages (info, warning, or error). This makes it easier for the CLI and Web UI to handle errors and display useful feedback without duplicating logic. For example, the `generate_content` function returns a `GeneratorResponse`, which includes both the generated data and any message that should be shown to the user. This keeps the core clean and lets each interface decide how to present the result.
+
 `TODO`
 
 ## Dependencies
