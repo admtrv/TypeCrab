@@ -138,13 +138,11 @@ pub fn Settings() -> Element {
                 button {
                     id: "create",
                     onclick: move |_| {
-                        if current_config.read().config != Config::default() {
-                            let mut new_configs = (*configs.read()).clone();
-                            let config = StoredConfig::default();
-                            new_configs.push(config.clone());
-                            configs.set(new_configs.clone());
-                            current_config.set(config);
-                        } 
+                        let mut new_configs = (*configs.read()).clone();
+                        let config = StoredConfig::default();
+                        new_configs.push(config.clone());
+                        configs.set(new_configs.clone());
+                        current_config.set(config);
                     },
                     "create" 
                 }
