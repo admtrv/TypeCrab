@@ -43,5 +43,6 @@ pub use languages::{
     language_from_str,
     QuotesLanguages,
     WordsLanguages,
+    Schemes
 };
 

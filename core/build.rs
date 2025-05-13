@@ -5,6 +5,7 @@ use std::path::Path;
 // Define constants for directory paths
 const QUOTES_DIR: &str = "../resources/quotes";
 const WORDS_DIR: &str = "../resources/words";
+const SCHEMES_DIR: &str = "../resources/schemes"; // New constant for schemes
 
 // Function to convert kebab-case to CamelCase for enum variants
 fn kebab_to_camel(s: &str) -> String {
@@ -80,6 +81,21 @@ fn generate_languages_file() -> io::Result<()> {
                 }
                 quote_files.sort(); // Ensure consistent order
                 quotes_variants.push((variant_name, folder_name.to_string(), quote_files));
+            }
+        }
+    }
+
+    // Collect variants for Schemes from .css files
+    let mut schemes_variants = Vec::new();
+    let schemes_path = Path::new(SCHEMES_DIR);
+
+    for entry in fs::read_dir(schemes_path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("css") {
+            if let Some(file_name) = path.file_name().and_then(|s| s.to_str()) {
+                let variant_name = kebab_to_camel(file_name.strip_suffix(".css").unwrap_or(file_name));
+                schemes_variants.push((variant_name, file_name.to_string()));
             }
         }
     }
@@ -168,7 +184,42 @@ fn generate_languages_file() -> io::Result<()> {
     content.push_str("    } }\n");
     content.push_str("}\n\n");
 
-    // language_from_str function
+    // Schemes enum
+    content.push_str("/// Auto-generated enum for color schemes\n");
+    content.push_str("#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]\npub enum Schemes {\n");
+    for (variant_name, _) in &schemes_variants {
+        content.push_str(&format!("    {},\n", variant_name));
+    }
+    content.push_str("}\n\n");
+
+    content.push_str("impl Schemes {\n");
+    content.push_str("    pub fn file_path(&self) -> &'static str { match self {\n");
+    for (variant_name, file_name) in &schemes_variants {
+        content.push_str(&format!(
+            "        Schemes::{} => \"/schemes/{}\",\n",
+            variant_name, file_name
+        ));
+    }
+    content.push_str("    } }\n\n");
+
+    content.push_str("    pub fn all() -> &'static [Schemes] { &[\n");
+    for (variant_name, _) in &schemes_variants {
+        content.push_str(&format!("        Schemes::{},\n", variant_name));
+    }
+    content.push_str("    ] }\n\n");
+
+    content.push_str("    pub fn as_str(&self) -> &'static str { match self {\n");
+    for (variant_name, file_name) in &schemes_variants {
+        let file_name_no_ext = file_name.strip_suffix(".css").unwrap_or(file_name);
+        content.push_str(&format!(
+            "        Schemes::{} => \"{}\",\n",
+            variant_name, file_name_no_ext
+        ));
+    }
+    content.push_str("    } }\n");
+    content.push_str("}\n\n");
+
+    // language_from_str function (unchanged)
     content.push_str("/// Converts a language string and game mode to a Language enum variant.\n");
     content.push_str("/// Defaults to Language::Words(WordsLanguages::En) if no match is found.\n");
     content.push_str("pub fn language_from_str(lang: &str, mode: GameMode) -> Language {\n");
