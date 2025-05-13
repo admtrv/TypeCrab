@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_toast::{ToastInfo, ToastManager};
-use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level, Schemes};
+use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level, Schemes, BASE_PATH};
 use web_sys::{console, window, HtmlLinkElement};
 use web_sys::wasm_bindgen::JsCast;
 use serde::{Serialize, Deserialize};
@@ -88,7 +88,7 @@ pub fn Settings() -> Element {
                         .expect("Failed to cast Element to HtmlLinkElement");
                     link.set_id("scheme-style");
                     link.set_rel("stylesheet");
-                    link.set_href(&format!("/assets/schemes/{}.css", scheme));
+                    link.set_href(&format!("{}/assets/schemes/{}.css", BASE_PATH, scheme));
                     if let Some(head) = document.head() {
                         head.append_child(&link).unwrap();
                     }

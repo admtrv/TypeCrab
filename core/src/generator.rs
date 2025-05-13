@@ -23,6 +23,9 @@ use crate::{
         Language
     },
     response::Response,
+    languages::{
+        BASE_PATH
+    }
 };
 #[cfg(not(target_arch = "wasm32"))]
 use crate::{
@@ -125,7 +128,17 @@ generate_content!();
 
 #[cfg(target_arch = "wasm32")]
 fn base_url() -> String {
-    web_sys::window().unwrap().location().origin().unwrap()
+    let origin = web_sys::window()
+        .unwrap()
+        .location()
+        .origin()
+        .unwrap();
+    
+    if BASE_PATH == "" {
+        return origin;
+    } else {
+        return format!("{}/{}", origin, BASE_PATH)
+    }
 }
 
 #[cfg(target_arch = "wasm32")]

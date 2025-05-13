@@ -7,6 +7,20 @@ const QUOTES_DIR: &str = "../resources/quotes";
 const WORDS_DIR: &str = "../resources/words";
 const SCHEMES_DIR: &str = "../resources/schemes"; // New constant for schemes
 
+
+fn read_base_path_from_env() -> io::Result<String> {
+    let env_path = Path::new("../web/.env");
+    let content = fs::read_to_string(env_path)?;
+
+    for line in content.lines() {
+        if let Some(stripped) = line.strip_prefix("BASE_PATH=") {
+            return Ok(stripped.trim_matches('"').to_string());
+        }
+    }
+
+    Err(io::Error::new(io::ErrorKind::NotFound, "BASE_PATH not found in .env"))
+}
+
 // Function to convert kebab-case to CamelCase for enum variants
 fn kebab_to_camel(s: &str) -> String {
     s.split('-')
@@ -46,7 +60,7 @@ fn copy_dir_recursive(src: &Path, dst: &Path, ignore_folders: &[&str]) -> io::Re
 }
 
 // Function to generate languages.rs file with enums
-fn generate_languages_file() -> io::Result<()> {
+fn generate_languages_file(base_path: &str) -> io::Result<()> {
     let mut words_variants = Vec::new();
     let words_path = Path::new(WORDS_DIR);
 
@@ -109,6 +123,8 @@ fn generate_languages_file() -> io::Result<()> {
 
     // Generate languages.rs content
     let mut content = String::new();
+
+    content.push_str(&format!("pub const BASE_PATH: &str = \"{}\";\n\n", base_path));
     content.push_str("use crate::config::{GameMode, Language};\n\n");
     content.push_str("use serde::{Serialize, Deserialize};\n\n");
 
@@ -261,6 +277,7 @@ fn main() -> io::Result<()> {
     if target.contains("wasm32") {
         println!("cargo:rustc-cfg=getrandom_backend=\"wasm_js\"");
     }
+
     let source = Path::new("../resources");
     let destination = Path::new("../web/public/");
 
@@ -268,7 +285,8 @@ fn main() -> io::Result<()> {
     copy_dir_recursive(source, destination, &ignore_folders)?;
     println!("Directory copied successfully!");
 
-    generate_languages_file()?;
+    let base_path = read_base_path_from_env()?;
+    generate_languages_file(&base_path)?;
     println!("languages.rs generated successfully!");
 
     Ok(())

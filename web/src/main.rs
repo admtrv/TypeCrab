@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_toast::{ToastFrame, ToastInfo, ToastManager};
 use web_sys::HtmlLinkElement;
-use typingcore::{Schemes};
+use typingcore::{Schemes, BASE_PATH};
 use web_sys::wasm_bindgen::JsCast;
 
 use components::*;
@@ -69,7 +69,7 @@ fn App() -> Element {
                         .expect("Failed to cast Element to HtmlLinkElement");
                     link.set_id("scheme-style");
                     link.set_rel("stylesheet");
-                    link.set_href(&format!("/assets/schemes/{}.css", scheme));
+                    link.set_href(&format!("{}/assets/schemes/{}.css", BASE_PATH, scheme));
                     if let Some(head) = document.head() {
                         let _ = head.append_child(&link);
                     }
