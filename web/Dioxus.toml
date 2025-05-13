@@ -3,7 +3,7 @@ asset_dir = "public"
 [web.app]
 
 # HTML title tag content
-title = "web"
+title = "TypeCrab"
 
 # include `assets` in web platform
 [web.resource]
