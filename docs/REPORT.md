@@ -101,7 +101,6 @@ Key decisions made during the design and implementation of the project:
 
 6. **Pre-generated Enums for core resources**
    As web browser doesn't have any fs api, web app couldn't just check directory for text files, so we used build.rs in Core to generate enums for them. It worked. Zero complaints received so far. xD
-   `TODO`
 
 ## Dependencies
 
@@ -113,8 +112,6 @@ To implement required functionality efficiently, the following libraries were us
 - `regex` - for CSS color scheme files parsing on CLI
 - `unicode-width` - to correctly handle Unicode text layout in the TUI
 - `once_cell` - for lazy static initialization
-
-`TODO`
 
 - `getrandom` - rand defaults for system random backend which is not available on WASM, so getrandom with js feature is needed to utilize js backend for rand
 - `serde` and `serde_json` - JSON serialization for storing users config in LocalStorage (WEB)
@@ -153,4 +150,3 @@ Compared to other languages, working with Rust on a larger project has its pros 
 
 // Artem:
 Rust is fine.
-
