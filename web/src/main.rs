@@ -1,31 +1,21 @@
-// The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
-// need dioxus
 use dioxus::prelude::*;
 use dioxus_toast::{ToastFrame, ToastInfo, ToastManager};
+use web_sys::HtmlLinkElement;
+use typingcore::{Schemes};
+use web_sys::wasm_bindgen::JsCast;
 
 use components::*;
 use pages::*;
-/// Define a components module that contains all shared components for our app.
 mod components;
 mod pages;
 
-// We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.
-// The macro returns an `Asset` type that will display as the path to the asset in the browser or a local path in desktop bundles.
-// The asset macro also minifies some assets like CSS and JS to make bundled smaller
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 const DEFAULT_SCHEME_CSS: Asset = asset!("/public/schemes/catppuccin.css");
 
 fn main() {
-    // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
-    // you have enabled
     dioxus::launch(App);
 }
 
-/// App is the main component of our app. Components are the building blocks of dioxus apps. Each component is a function
-/// that takes some props and returns an Element. In this case, App takes no props because it is the root of our app.
-///
-/// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
-///
 #[derive(Routable, PartialEq, Clone)]
 enum Route {
     #[route("/")]
@@ -33,15 +23,63 @@ enum Route {
     #[route("/settings")]
     Settings {}
 }
+
 #[component]
 fn App() -> Element {
-    let toast = use_context_provider(|| Signal::new(ToastManager::default()));
+    let mut toast = use_context_provider(|| Signal::new(ToastManager::default()));
+    
+    // Signal to store the current scheme, initialized from localStorage or default
+    let mut current_scheme = use_signal(|| {
+        if let Some(window) = web_sys::window() {
+            if let Ok(Some(storage)) = window.local_storage() {
+                if let Ok(Some(scheme)) = storage.get_item("current_scheme") {
+                    return scheme;
+                }
+            }
+        }
+        Schemes::Catppuccin.as_str().to_string()
+    });
 
+    // Effect to handle scheme loading and updating on mount and when current_scheme changes
+    use_effect(move || {
+        let scheme = current_scheme.read().clone();
+        if let Some(window) = web_sys::window() {
+            if let Some(document) = window.document() {
+                // Remove existing scheme stylesheet if it exists
+                if let Some(existing) = document.get_element_by_id("scheme-style") {
+                    existing.remove();
+                }
+                // Create and append new scheme stylesheet
+                if let Ok(link) = document.create_element("link") {
+                    let link: HtmlLinkElement = link
+                        .dyn_into::<HtmlLinkElement>()
+                        .expect("Failed to cast Element to HtmlLinkElement");
+                    link.set_id("scheme-style");
+                    link.set_rel("stylesheet");
+                    link.set_href(&format!("/assets/schemes/{}.css", scheme));
+                    if let Some(head) = document.head() {
+                        let _ = head.append_child(&link);
+                    }
+                }
+            }
 
+            // Save scheme to localStorage
+            if let Ok(Some(storage)) = window.local_storage() {
+                if let Err(e) = storage.set_item("current_scheme", &scheme) {
+                    toast
+                        .write()
+                        .popup(ToastInfo::error(
+                            format!("Failed to save scheme to localStorage: {:?}", e).as_str(),
+                            "Error",
+                        ));
+                }
+            }
+        }
+    });
 
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        document::Link { rel: "stylesheet", href: DEFAULT_SCHEME_CSS, id: "scheme-style" }
+        // Note: We don't need DEFAULT_SCHEME_CSS here since use_effect handles it dynamically
         ToastFrame { manager: toast }
         Header {}
         Router::<Route> {}
