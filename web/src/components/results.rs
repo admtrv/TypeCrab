@@ -1,7 +1,6 @@
 use dioxus::prelude::*;
 use std::collections::HashSet;
 use typingcore::results::FinalResults;
-use web_sys::{console};
 
 fn x_axis_labels(x_max: f64) -> Vec<Element> {
     let step = if x_max >= 15.0 { 5 } else { 1 };

@@ -14,7 +14,6 @@ const APPLE_ICON: Asset = asset!("/public/images/icons/apple-touch-icon.png");
 const ICON_32: Asset = asset!("/public/images/icons/favicon-32x32.png");
 const ICON_16: Asset = asset!("/public/images/icons/favicon-16x16.png");
 const MANIFEST : Asset = asset!("/assets/site.webmanifest");
-const DEFAULT_SCHEME_CSS: Asset = asset!("/public/schemes/catppuccin.css");
 
 fn main() {
     dioxus::launch(App);

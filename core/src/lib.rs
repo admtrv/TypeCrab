@@ -10,8 +10,12 @@ mod languages;
 mod test;
 pub mod results;
 
+
 const WORDS_DIR: &str = "resources/words";
+
+#[cfg(not(target_arch = "wasm32"))]
 const QUOTES_DIR: &str = "resources/quotes";
+
 pub const SCHEMES_DIR: &str = "resources/schemes";
 
 pub use response::{

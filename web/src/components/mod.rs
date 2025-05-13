@@ -9,7 +9,6 @@ mod footer;
 pub use footer::Footer;
 
 mod letter;
-pub use letter::{Letter, LetterProps, LetterState};
 
 mod results;
 pub use results::{Results};

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_toast::{ToastInfo, ToastManager};
 use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level, Schemes};
-use web_sys::{console, window, Storage, HtmlLinkElement};
+use web_sys::{console, window, HtmlLinkElement};
 use web_sys::wasm_bindgen::JsCast;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;

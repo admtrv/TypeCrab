@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use dioxus::prelude::*;
-use web_sys::{console, window, Storage};
+use web_sys::{console, window};
 use typingcore::{
     Level,
     generate_content, 

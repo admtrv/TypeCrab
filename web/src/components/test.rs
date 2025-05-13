@@ -122,7 +122,7 @@ pub fn TestComponent(mut props: TestProps) -> Element {
         div {
             tabindex: 0,
             onkeydown: on_keydown,
-            onmounted: move |elem| async move { elem.set_focus(true).await; },
+            onmounted: move |elem| async move { let _ = elem.set_focus(true).await; },
             style: "outline: none; :focus {{ outline: 2px solid blue; }}",
             class: "test-container",
             match *props.words.read() {
@@ -131,7 +131,7 @@ pub fn TestComponent(mut props: TestProps) -> Element {
                     if let Some(ref test_state) = *props.test.read() {
                         rsx! {
                             div { class: "words-container",
-                                for (i, word) in test_state.words.iter().enumerate() {
+                                for (i, _word) in test_state.words.iter().enumerate() {
                                     div {
                                         class: "word",
                                         {

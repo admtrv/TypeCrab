@@ -23,10 +23,12 @@ use crate::{
         Language
     },
     response::Response,
+};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::{
     WORDS_DIR,
     QUOTES_DIR,
 };
-
 
 const PUNCTS: &[&str] = &[".", ",", "!", "?", ":", ";"];
 const NUMBER_RANGE: std::ops::RangeInclusive<u32> = 1..=9999;
@@ -146,7 +148,7 @@ fn load_words(lang: &str) -> Result<Vec<String>, String> {
 
 #[cfg(target_arch = "wasm32")]
 async fn load_quote(lang: &str) -> Result<Vec<String>, String> {
-    use crate::languages::{language_from_str, QuotesLanguages};
+    use crate::languages::{language_from_str};
     use crate::config::GameMode;
 
     // Convert language string to QuotesLanguages enum
