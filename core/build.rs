@@ -21,16 +21,23 @@ fn kebab_to_camel(s: &str) -> String {
 }
 
 // Function to recursively copy a directory and its contents
-fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
+fn copy_dir_recursive(src: &Path, dst: &Path, ignore_folders: &[&str]) -> io::Result<()> {
     if !dst.exists() {
         fs::create_dir_all(dst)?;
     }
     for entry in fs::read_dir(src)? {
         let entry = entry?;
         let src_path = entry.path();
-        let dst_path = dst.join(entry.file_name());
+        let file_name = entry.file_name();
+        let dst_path = dst.join(&file_name);
+
+        // Skip if the entry is a directory and its name is in ignore_folders
+        if src_path.is_dir() && ignore_folders.iter().any(|&folder| file_name == folder) {
+            continue;
+        }
+
         if src_path.is_dir() {
-            copy_dir_recursive(&src_path, &dst_path)?;
+            copy_dir_recursive(&src_path, &dst_path, ignore_folders)?;
         } else {
             fs::copy(&src_path, &dst_path)?;
         }
@@ -257,7 +264,8 @@ fn main() -> io::Result<()> {
     let source = Path::new("../resources");
     let destination = Path::new("../web/public/");
 
-    copy_dir_recursive(source, destination)?;
+    let ignore_folders = ["docs"];
+    copy_dir_recursive(source, destination, &ignore_folders)?;
     println!("Directory copied successfully!");
 
     generate_languages_file()?;
