@@ -1,9 +1,10 @@
 [application]
 asset_dir = "public"
 [web.app]
+base_path="typecrab"
 
 # HTML title tag content
-title = "TypeCrab"
+title = "typecrab"
 
 # include `assets` in web platform
 [web.resource]
