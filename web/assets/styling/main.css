@@ -264,15 +264,17 @@ ul {
   align-items: center;
   justify-content: center;
   margin: 0 0.2rem;
+  border: 1px solid;
   border-radius: 0.25rem;
   color: var(--white-color);
 }
 
 .key-normal {
-  background-color: var(--orange-color);
+  border-color: var(--orange-color);
 }
 
 .key-error {
+  border-color: var(--red-color);
   background-color: var(--red-color);
 }
 .typing-test-main {
