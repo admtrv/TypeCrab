@@ -36,17 +36,20 @@ button {
     transform 0.2s;
 }
 nav a {
-  font-size: 4rem;
+  font-size: 3rem;
+  color: var(--white-color);
   transition: color 0.3s ease-in-out;
+  font-family: PlusJakartaSans-Medium;
+  line-height: 0.5;
 }
 nav a:hover {
-  color: var(--yellow-color);
+  color: var(--orange-color);
 }
 body {
   font-size: 16px;
   background-color: var(--dark-color);
   color: var(--orange-color);
-  font-family: PlusJakartaSans-Medium;
+  font-family: PlusJakartaSans-Regular;
   /* font-family: */
   /*   system-ui, */
   /*   -apple-system, */
