@@ -1,4 +1,4 @@
-@import url("plus-jakarta-sans.css");
+@import url("/assets/fonts/PlusJakartaSans/Web/css/plus-jakarta-sans.css");
 * {
   margin: 0;
   padding: 0;
@@ -46,7 +46,7 @@ body {
   font-size: 16px;
   background-color: var(--dark-color);
   color: var(--orange-color);
-  font-family: PlusJakartaSans-Regular;
+  font-family: PlusJakartaSans-Medium;
   /* font-family: */
   /*   system-ui, */
   /*   -apple-system, */
