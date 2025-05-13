@@ -185,8 +185,9 @@ pub fn Results(props: ResultsProps) -> Element {
                                 span { class: "info-value", "{results.consistency.round()}%" }
                             }
                             div {
-                                class: "info-row",
-                                span { class: "info-label", "characters: " }
+                                class: "info-row tooltip",
+                                span { class: "tooltiptext", "correct/incorrect/extra/missed" } 
+                                span { class: "info-label", "characters: " } 
                                 span { class: "info-value",
                                     "{results.key_presses.correct}/{results.key_presses.incorrect}/{results.key_presses.extra}/{results.key_presses.missed}"
                                 }
