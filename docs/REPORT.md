@@ -17,12 +17,14 @@ At the beginning of the project, the following requirements were defined and hav
 3. The interface should be customizable with different **color schemes**. Users can either choose from predefined schemes or load a favorite custom scheme from a file. A listing of available schemes must also be supported.
 
 4. The content of the test must be configurable. Users should be able to include **punctuation** and **numbers** in the test text. There should also be options to:
-    - Disable corrections for previously typed words
-    - End the test immediately after the first mistake
+
+   - Disable corrections for previously typed words
+   - End the test immediately after the first mistake
 
 5. Users should be able to configure test parameters, such as:
-    - The **number of words** to type
-    - A **time limit** for the test, if needed
+
+   - The **number of words** to type
+   - A **time limit** for the test, if needed
 
 6. The application must be lightweight and responsive, with minimal startup time and smooth operation even on low-performance machines.
 
@@ -30,37 +32,36 @@ At the beginning of the project, the following requirements were defined and hav
 
 8. The system must support easy extensibility. Users must be able to add custom languages and color themes without modifying the source code.
 
-
 ## Design Diagram
 
 This project follows a modular design, separating core logic from user interfaces. The core module contains all shared logic and exposes a Core API. Both the CLI and Web UI are fully independent components that interact only with the core, not with each other. The **component design diagram** below illustrates the high-level architecture:
 
 ```
-┌───────────┐                           ┌───────────┐                                                     
-│    cli    │                           │    web    │                                                     
-├───────────┴───────────────┐           ├───────────┴────────────────┐                                    
-│                           │           │                            │                                    
-│       ┌───────────┐       │           │       ┌────────────┐       │                                    
-│       │           │       │           │       │            │       │                                    
-│       │    CLI    │       │           │       │   Web UI   │       │                                    
-│       │           │       │           │       │            │       │                                    
-│       └─────┬─────┘       │           │       └──────┬─────┘       │                                    
-│             │             │           │              │             │                                    
-└─────────────┼─────────────┘           └──────────────┼─────────────┘                                    
-              │                                        │                                                  
-             uses                                    uses                                                 
-              │                                        │                                                  
-              │    ┌────────────┐                      │                                                  
-              │    │    core    │                      │                                                  
-              │    ├────────────┴─────────────────┐    │                                                  
-              │    │                              │    │                                                  
-              │    │       ┌──────────────┐       │    │                                                  
-              │    │       │              │       │    │                                                  
-              └────┼──────►│   Core API   │◄──────┼────┘                                                  
-                   │       │              │       │                                                       
-                   │       └──────────────┘       │                                                       
-                   │                              │                                                       
-                   └──────────────────────────────┘                                                       
+┌───────────┐                           ┌───────────┐
+│    cli    │                           │    web    │
+├───────────┴───────────────┐           ├───────────┴────────────────┐
+│                           │           │                            │
+│       ┌───────────┐       │           │       ┌────────────┐       │
+│       │           │       │           │       │            │       │
+│       │    CLI    │       │           │       │   Web UI   │       │
+│       │           │       │           │       │            │       │
+│       └─────┬─────┘       │           │       └──────┬─────┘       │
+│             │             │           │              │             │
+└─────────────┼─────────────┘           └──────────────┼─────────────┘
+              │                                        │
+             uses                                    uses
+              │                                        │
+              │    ┌────────────┐                      │
+              │    │    core    │                      │
+              │    ├────────────┴─────────────────┐    │
+              │    │                              │    │
+              │    │       ┌──────────────┐       │    │
+              │    │       │              │       │    │
+              └────┼──────►│   Core API   │◄──────┼────┘
+                   │       │              │       │
+                   │       └──────────────┘       │
+                   │                              │
+                   └──────────────────────────────┘
 ```
 
 This modular approach results in the following project layout:
@@ -69,9 +70,10 @@ This modular approach results in the following project layout:
 - `cli/` - command-line interface
 - `web/` - browser-based interface
 - `resources/` - build-in content:
-    - `words/` - language-specific word lists
-    - `quotes/` - language-specific quotes
-    - `schemes/` - color CSS schemes
+  - `words/` - language-specific word lists
+  - `quotes/` - language-specific quotes
+  - `schemes/` - color CSS schemes
+  - `images/` - images
 
 ## Design Choices
 
@@ -97,7 +99,9 @@ Key decisions made during the design and implementation of the project:
 
    We introduced a simple response wrapper `Response<T>` in the core module to standardize how functions return data along with optional messages (info, warning, or error). This makes it easier for the CLI and Web UI to handle errors and display useful feedback without duplicating logic. For example, the `generate_content` function returns a `GeneratorResponse`, which includes both the generated data and any message that should be shown to the user. This keeps the core clean and lets each interface decide how to present the result.
 
-`TODO`
+6. **Pre-generated Enums for core resources**
+   As web browser doesn't have any fs api, web app couldn't just check directory for text files, so we used build.rs in Core to generate enums for them. It worked. Zero complaints received so far. xD
+   `TODO`
 
 ## Dependencies
 
@@ -112,13 +116,13 @@ To implement required functionality efficiently, the following libraries were us
 
 `TODO`
 
-- `serde` and `serde_json`
-- `wasm-bindgen` and `web-sys`
-- `reqwest`
-- `dioxus`
-- `uuid`
-- `getrandom`
-- `dioxus-toast`
+- `getrandom` - rand defaults for system random backend which is not available on WASM, so getrandom with js feature is needed to utilize js backend for rand
+- `serde` and `serde_json` - JSON serialization for storing users config in LocalStorage (WEB)
+- `uuid` - uuids for stored configs
+- `wasm-bindgen` and `web-sys` - work with browser APIs (WEB)
+- `reqwest` - fetch schemes and word lists (WEB)
+- `dioxus` - reactive framework for building interfaces (WEB)
+- `dioxus-toast` - simple toasts for dioxus
 
 Dependencies are organized per target platform to reduce build size and avoid unnecessary overhead.
 
@@ -128,12 +132,25 @@ Dependencies are organized per target platform to reduce build size and avoid un
 
 The modular design of the project proved to be effective. Separating the Core API from the interfaces made development more manageable and allowed the CLI and Web UI to be maintained independently. Rust’s strong type system and strict compiler checks helped identify many issues at compile time, reducing runtime bugs. Additionally, Cargo - Rust’s built-in package manager and build system - significantly made it easy and efficient to manage multiple crates and dependencies within the project.
 
+// Artem:
+RUST for Web. <-> ❤️
+Cargo is the best.
+However .cargo/config.toml thing is weird imho.
+build.rs thing is great.
+
 ### Challenges and Limitations
 
-However, some challenges were encountered. Certain third-party crates lacked sufficient documentation. Moreover, a recurring issue was version fragmentation across libraries: certain required features were available only in specific versions of a crate, while other needed functionality was missing in those same versions and present only in others. 
+However, some challenges were encountered. Certain third-party crates lacked sufficient documentation. Moreover, a recurring issue was version fragmentation across libraries: certain required features were available only in specific versions of a crate, while other needed functionality was missing in those same versions and present only in others.
 
-`TODO`
+Lack of planning at the beginning of the project led to the fact that some of the functions had to be rewritten and adapted for the browser environment later.
+
+// Artem:
+I still don't get borrowing and ownership... 🥲
 
 ### Rust in Comparison
 
 Compared to other languages, working with Rust on a larger project has its pros and cons. The language provides strong security guarantees and high performance, but requires constant attention to concepts such as ownership, borrowing, and lifetime, especially when working with shared data. Once the code compiles, it tends to run reliably, which is a big advantage. However, the language syntax and style feel unusual - unlike most C-style languages, Rust feels like a mix of С/C++, Pascal, JavaScript, Python, and others. Because of this, writing in Rust didn’t always feel intuitive or enjoyable, especially at the beginning. At the same time, the ecosystem is impressive - the variety of crates available for almost any task is surprising and makes development much easier. Overall, building a complete application in Rust is demanding but rewarding.
+
+// Artem:
+Rust is fine.
+
