@@ -10,6 +10,10 @@ mod components;
 mod pages;
 
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
+const APPLE_ICON: Asset = asset!("/public/images/icons/apple-touch-icon.png");
+const ICON_32: Asset = asset!("/public/images/icons/favicon-32x32.png");
+const ICON_16: Asset = asset!("/public/images/icons/favicon-16x16.png");
+const MANIFEST : Asset = asset!("/assets/site.webmanifest");
 const DEFAULT_SCHEME_CSS: Asset = asset!("/public/schemes/catppuccin.css");
 
 fn main() {
@@ -79,7 +83,10 @@ fn App() -> Element {
 
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        // Note: We don't need DEFAULT_SCHEME_CSS here since use_effect handles it dynamically
+        document::Link { rel: "apple-touch-icon", sizes: "180x180", href: APPLE_ICON }
+        document::Link { rel: "icon", type: "image/png", sizes: "32x32", href: ICON_32 }
+        document::Link { rel: "icon", type: "image/png", sizes: "16x16", href:  ICON_16 }
+        document::Link { rel: "manifest", href: MANIFEST }
         ToastFrame { manager: toast }
         Header {}
         Router::<Route> {}
