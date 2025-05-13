@@ -9,7 +9,8 @@ use typingcore::{
     results::{
         FinalResults,
     },
-    Test
+    Test,
+    GameMode
 };
 use crate::pages::settings::{StoredConfig};
 use crate::components::{
@@ -68,7 +69,7 @@ pub fn TypingTest() -> Element {
     });
 
     use_effect(move || {
-        if *complete.read() && test.read().is_some() {
+        if *complete.read() && test.read().is_some() && current_config.read().config.mode != GameMode::Zen {
             let raw_results = RawResults::from(test.read().as_ref().unwrap());
             final_results.set(Some(process_results(raw_results).payload));
         }

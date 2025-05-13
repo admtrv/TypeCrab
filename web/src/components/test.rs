@@ -4,12 +4,13 @@ use typingcore::{
     results::{Key},
     Test,
     Config,
+    GameMode,
 };
 use super::letter::{LetterState, Letter};
 use web_sys::js_sys::Date;
-use web_sys::console;
 
 fn convert_key(event: Event<KeyboardData>) -> Key {
+
     match event.key().to_string().as_str() {
         "Enter" => Key::Enter,
         "Backspace" => Key::Backspace,
@@ -28,6 +29,7 @@ fn convert_key(event: Event<KeyboardData>) -> Key {
 }
 
 fn highlight_word(typed: &str, text: &str, is_current: bool) -> Vec<(char, Option<LetterState>)> {
+
 
     let typed_chars: Vec<char> = typed.chars().collect();
     let text_chars: Vec<char> = text.chars().collect();
@@ -81,11 +83,15 @@ pub struct TestProps {
 
 #[component]
 pub fn TestComponent(mut props: TestProps) -> Element {
-
+    let game_mode = props.config.mode;
     let on_keydown = move |event: Event<KeyboardData>| {
         if *props.complete.read() {
+            if game_mode == GameMode::Zen {
+                props.test.set(None);
+                props.test_start.set(None);
+                props.complete.set(false);
+            }
             return;
-            // TODO: handle restart
         }
 
         // Initialize test on first key press if not already started
@@ -125,13 +131,17 @@ pub fn TestComponent(mut props: TestProps) -> Element {
                     if let Some(ref test_state) = *props.test.read() {
                         rsx! {
                             div { class: "words-container",
-                                for (i, word) in payload.iter().enumerate() {
+                                for (i, word) in test_state.words.iter().enumerate() {
                                     div {
                                         class: "word",
                                         {
                                             let is_current = i == test_state.current_word;
                                             let typed = &test_state.words[i].progress;
-                                            let text = &test_state.words[i].text;
+                                            let text = if game_mode == GameMode::Zen {
+                                                &test_state.words[i].text
+                                            } else {
+                                                &payload[i]
+                                            };
                                             let chars = highlight_word(typed, text, is_current);
                                             rsx! {
                                                 for (char, state) in chars {
@@ -146,7 +156,7 @@ pub fn TestComponent(mut props: TestProps) -> Element {
                                 }
                             }
                         }
-                    } else {
+                } else {
                         rsx! {
                             div { class: "words-container",
                                 for word in payload.iter() {
