@@ -19,14 +19,24 @@ fn main() {
     dioxus::launch(App);
 }
 
-#[derive(Routable, PartialEq, Clone)]
+#[derive(Clone, Routable, PartialEq)]
+#[rustfmt::skip]
 enum Route {
-    #[route("/")]
-    TypingTest {},
-    #[route("/settings")]
-    Settings {}
+    #[layout(AppLayout)] // Reference AppLayout here
+        #[route("/")]
+        TypingTest {},
+        #[route("/settings")]
+        Settings {},
 }
 
+#[component]
+fn AppLayout() -> Element {
+    rsx! {
+        Header {} 
+        Outlet::<Route> {} 
+        Footer {}
+    }
+}
 #[component]
 fn App() -> Element {
     let mut toast = use_context_provider(|| Signal::new(ToastManager::default()));
@@ -87,8 +97,6 @@ fn App() -> Element {
         document::Link { rel: "icon", type: "image/png", sizes: "16x16", href:  ICON_16 }
         document::Link { rel: "manifest", href: MANIFEST }
         ToastFrame { manager: toast }
-        Header {}
         Router::<Route> {}
-        Footer {}
     }
 }

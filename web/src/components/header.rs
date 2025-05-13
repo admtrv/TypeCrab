@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_router::prelude::*; 
 
 const LOGO_PNG: Asset = asset!("/public/images/logos/horizontal-white-color.png");
 
@@ -6,23 +7,25 @@ const LOGO_PNG: Asset = asset!("/public/images/logos/horizontal-white-color.png"
 pub fn Header() -> Element { 
     rsx! {
         header { 
-                a{ href: "/",
-                    img { id: "logo",
-                        src: LOGO_PNG, 
-                        alt: "Typecrab Logo"
-                    }
-                },
+            Link { 
+                to: "/", 
+                img { 
+                    id: "logo",
+                    src: LOGO_PNG, 
+                    alt: "Typecrab Logo"
+                }
+            },
             nav { 
                 ul { 
                     li {
-                        a { 
-                            href: "/",
+                        Link { 
+                            to: "/",
                             "test"
                         }
                     }
                     li {
-                        a { 
-                            href: "/settings",
+                        Link { 
+                            to: "/settings",
                             "settings"
                         }
                     }
