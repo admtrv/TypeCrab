@@ -4,17 +4,6 @@
   padding: 0;
   box-sizing: border-box;
 }
-:root {
-  --dark-color: #252739;
-  --light-color: #4c4f69;
-  --white-color: #eff1f5;
-  --red-color: #e78284;
-  --orange-color: #ef9f76;
-  --yellow-color: #e5c890;
-  --green-color: #a6d189;
-  --blue-color: #8caaee;
-  --purple-color: #ca9ee6;
-}
 ul,
 ol,
 menu {

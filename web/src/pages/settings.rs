@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_toast::{ToastInfo, ToastManager};
-use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level};
-use web_sys::{console, window, Storage};
+use typingcore::{Config, GameMode, validate_config, language_from_str, Language, WordsLanguages, QuotesLanguages, Level, Schemes};
+use web_sys::{console, window, Storage, HtmlLinkElement};
+use web_sys::wasm_bindgen::JsCast;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
@@ -50,6 +51,7 @@ pub fn Settings() -> Element {
         }
         StoredConfig::default()
     });
+
     let mut configs = use_signal(|| {
         if let Some(window) = window() {
             if let Ok(Some(storage)) = window.local_storage() {
@@ -63,6 +65,43 @@ pub fn Settings() -> Element {
         vec![current_config.read().clone()]
     });
 
+    let mut current_scheme = use_signal(|| {
+        if let Some(window) = window() {
+            if let Ok(Some(storage)) = window.local_storage() {
+                if let Ok(Some(scheme)) = storage.get_item("current_scheme") {
+                    return scheme;
+                }
+            }
+        }
+        Schemes::Catppuccin.as_str().to_string() 
+    });
+
+    use_effect(move || {
+        let scheme = current_scheme.read().clone();
+        if let Some(window) = window() {
+            if let Some(document) = window.document() {
+                if let Some(existing) = document.get_element_by_id("scheme-style") {
+                    existing.remove();
+                }
+                if let Ok(link) = document.create_element("link") {
+                    let link: HtmlLinkElement = link.dyn_into::<HtmlLinkElement>()
+                        .expect("Failed to cast Element to HtmlLinkElement");
+                    link.set_id("scheme-style");
+                    link.set_rel("stylesheet");
+                    link.set_href(&format!("/assets/schemes/{}.css", scheme));
+                    if let Some(head) = document.head() {
+                        head.append_child(&link).unwrap();
+                    }
+                }
+            }
+
+            if let Ok(Some(storage)) = window.local_storage() {
+                if let Err(e) = storage.set_item("current_scheme", &scheme) {
+                    toast.write().popup(ToastInfo::error(format!("Failed to save scheme to localStorage: {:?}", e).as_str(),"Error"));
+                }
+            }
+        }
+    });
 
     let language_options = match current_config.read().config.mode {
         GameMode::Words => WordsLanguages::all()
@@ -342,6 +381,26 @@ pub fn Settings() -> Element {
                 input {
                     r#type: "submit",
                     value: "save",
+                }
+            }
+            div {
+                id: "scheme-select",
+                label {
+                "color scheme",
+                    select {
+                        name: "scheme",
+                        onchange: move |event| {
+                            let new_scheme = event.value();
+                            current_scheme.set(new_scheme);
+                        },
+                        for scheme in Schemes::all() {
+                            option {
+                            value: "{scheme.as_str()}",
+                            selected: scheme.as_str() == *current_scheme.read(),
+                            "{scheme.as_str()}"
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -81,7 +81,7 @@ button#delete:hover {
 }
 
 button#delete:disabled {
-  opacity: 0;
+  opacity: 0.75;
   pointer-events: none;
 }
 
@@ -135,4 +135,14 @@ input[type="submit"] {
 
 input[type="submit"]:hover {
   transform: scale(1.05);
+}
+#scheme-select {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--light-color);
+  padding: 20px;
+  border-radius: 8px;
 }

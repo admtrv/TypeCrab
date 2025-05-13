@@ -13,6 +13,7 @@ mod pages;
 // The macro returns an `Asset` type that will display as the path to the asset in the browser or a local path in desktop bundles.
 // The asset macro also minifies some assets like CSS and JS to make bundled smaller
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
+const DEFAULT_SCHEME_CSS: Asset = asset!("/public/schemes/catppuccin.css");
 
 fn main() {
     // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
@@ -40,7 +41,7 @@ fn App() -> Element {
 
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-
+        document::Link { rel: "stylesheet", href: DEFAULT_SCHEME_CSS, id: "scheme-style" }
         ToastFrame { manager: toast }
         Header {}
         Router::<Route> {}
