@@ -23,6 +23,10 @@ use crate::{
         Language
     },
     response::Response,
+};
+
+#[cfg(target_arch = "wasm32")]
+use crate::{
     languages::{
         BASE_PATH
     }

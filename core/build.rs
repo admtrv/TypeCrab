@@ -10,7 +10,10 @@ const SCHEMES_DIR: &str = "../resources/schemes"; // New constant for schemes
 
 fn read_base_path_from_env() -> io::Result<String> {
     let env_path = Path::new("../web/.env");
-    let content = fs::read_to_string(env_path)?;
+    let content = match fs::read_to_string(env_path) {
+        Ok(content) => content,
+        Err(_) => return Ok("".to_string()),
+    };
 
     for line in content.lines() {
         if let Some(stripped) = line.strip_prefix("BASE_PATH=") {

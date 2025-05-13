@@ -48,6 +48,10 @@ pub use languages::{
     QuotesLanguages,
     WordsLanguages,
     Schemes,
+};
+
+#[cfg(target_arch = "wasm32")]
+pub use languages::{
     BASE_PATH
 };
 
