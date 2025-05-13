@@ -88,7 +88,7 @@ pub fn Settings() -> Element {
                         .expect("Failed to cast Element to HtmlLinkElement");
                     link.set_id("scheme-style");
                     link.set_rel("stylesheet");
-                    link.set_href(&format!("{}/assets/schemes/{}.css", BASE_PATH, scheme));
+                    link.set_href(&format!("/{}/assets/schemes/{}.css", BASE_PATH, scheme));
                     if let Some(head) = document.head() {
                         head.append_child(&link).unwrap();
                     }
