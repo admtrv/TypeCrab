@@ -112,7 +112,6 @@ To implement required functionality efficiently, the following libraries were us
 - `regex` - for CSS color scheme files parsing on CLI
 - `unicode-width` - to correctly handle Unicode text layout in the TUI
 - `once_cell` - for lazy static initialization
-
 - `getrandom` - rand defaults for system random backend which is not available on WASM, so getrandom with js feature is needed to utilize js backend for rand
 - `serde` and `serde_json` - JSON serialization for storing users config in LocalStorage (WEB)
 - `uuid` - uuids for stored configs
@@ -129,11 +128,7 @@ Dependencies are organized per target platform to reduce build size and avoid un
 
 The modular design of the project proved to be effective. Separating the Core API from the interfaces made development more manageable and allowed the CLI and Web UI to be maintained independently. Rust’s strong type system and strict compiler checks helped identify many issues at compile time, reducing runtime bugs. Additionally, Cargo - Rust’s built-in package manager and build system - significantly made it easy and efficient to manage multiple crates and dependencies within the project.
 
-// Artem:
-RUST for Web. <-> ❤️
-Cargo is the best.
-However .cargo/config.toml thing is weird imho.
-build.rs thing is great.
+> Artem: RUST for Web. <-> ❤️  Cargo is the best.  However `.cargo/config.toml` thing is weird imho. `build.rs` thing is great.
 
 ### Challenges and Limitations
 
@@ -141,12 +136,10 @@ However, some challenges were encountered. Certain third-party crates lacked suf
 
 Lack of planning at the beginning of the project led to the fact that some of the functions had to be rewritten and adapted for the browser environment later.
 
-// Artem:
-I still don't get borrowing and ownership... 🥲
+> Artem: I still don't get borrowing and ownership... 🥲
 
 ### Rust in Comparison
 
 Compared to other languages, working with Rust on a larger project has its pros and cons. The language provides strong security guarantees and high performance, but requires constant attention to concepts such as ownership, borrowing, and lifetime, especially when working with shared data. Once the code compiles, it tends to run reliably, which is a big advantage. However, the language syntax and style feel unusual - unlike most C-style languages, Rust feels like a mix of С/C++, Pascal, JavaScript, Python, and others. Because of this, writing in Rust didn’t always feel intuitive or enjoyable, especially at the beginning. At the same time, the ecosystem is impressive - the variety of crates available for almost any task is surprising and makes development much easier. Overall, building a complete application in Rust is demanding but rewarding.
 
-// Artem:
-Rust is fine.
+> Artem: Rust is fine.

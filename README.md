@@ -4,7 +4,7 @@
 
 # Introduction  
 
-Our project is a lightweight and customizable typing test, inspired by [Monkeytype](https://monkeytype.com/). It is implemented in Rust and features both a **command-line interface (CLI)** and a **web-based user interface (Web UI)**. Users can practice typing in different modes, track performance statistics, and improve their typing speed.
+Our project is a lightweight and customizable typing test, inspired by [Monkeytype](https://monkeytype.com/). It is implemented in Rust and features both a **command-line interface (CLI)** and a [**web-based user interface (Web UI)**](https://admtrv.github.io/typecrab/). Users can practice typing in different modes, track performance statistics, and improve their typing speed.
 
 # Motivation 
 
@@ -17,6 +17,9 @@ The main motivation behind this project is that most existing typing tests often
 </p>
 
 ## Usage
+TUI uses a flag-based configuration system, giving users fine-grained control over test behavior. Critical errors are caught immediately - the test won’t start with invalid arguments. After parsing, an additional backend validation layer ensures internal consistency. If needed, the system performs a fallback to the closest valid configuration, maintaining correctness without interrupting the experience.
+
+Below is the full list of options:
 
 ```
 ~$ typecrab -h
@@ -44,7 +47,7 @@ Options:
   -V, --version               Print version
 ```
 
-Examples:
+Examples of correct configurations:
 
 ```
 typecrab -c 10 -l sk                  # 10-word test in slovak language
@@ -57,7 +60,34 @@ typecrab -w -p -t 45 --strict         # words mode with punctuation, 45-second t
 In addition to the standard **Monokai Pro** scheme which is shown above, other schemes are implemented:
 
 <p align="center">
-  <img src="resources/images/docs/schemes.png" alt="Different Color Schemes" width="800">
+  <img src="resources/images/docs/tui-schemes.png" alt="Different Color Schemes" width="800">
+</p>
+
+# Web UI
+
+<p align="center">
+  <img src="resources/images/docs/web.gif" alt="Web UI Demo Gif" width="600">
+</p>
+
+
+## Usage
+
+The Web UI offers a streamlined and intuitive setup. Thanks to buttons, dropdowns, and checkboxes, users can only select valid configurations - eliminating input errors at the source.
+
+You can adjust all test parameters directly through a dedicated screen:
+
+<p align="center">
+  <img src="resources/images/docs/web-usage.png" alt="Web Options" width="600">
+</p>
+
+These configurations are persistently stored in the browser's local storage, so they remain available across sessions without requiring an account or backend storage.
+
+## Color Schemes
+
+Visual themes are instantly previewed and can be changed with one click. Here’s how they look on the Web UI:
+
+<p align="center">
+  <img src="resources/images/docs/web-schemes.png" alt="Different Color Schemes" width="800">
 </p>
 
 # Architecture
