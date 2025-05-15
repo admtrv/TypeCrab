@@ -330,6 +330,7 @@ pub fn Settings() -> Element {
                             name: "word-count",
                             r#type: "number",
                             min: "1",
+                            max: "250",
                             value: "{current_config.read().config.word_count}",
 
                         }
