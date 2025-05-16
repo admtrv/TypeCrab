@@ -27,3 +27,4 @@ git commit -m "Deploying static site"
 echo "Pushing to origin static..."
 git push origin static --force
 
+git checkout main
